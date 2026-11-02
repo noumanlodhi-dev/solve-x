@@ -1,0 +1,3791 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SolveX – Your Smart Problem Solver</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ==========================================================================
+       1. CSS DESIGN TOKENS & THEME ARCHITECTURE (PURE CSS3)
+       ========================================================================== */
+    :root, [data-theme="dark"] {
+      --bg-primary: #0B0F19;
+      --bg-secondary: #111827;
+      --bg-tertiary: #1E293B;
+      --bg-elevated: rgba(30, 41, 59, 0.7);
+      --bg-glass: rgba(17, 24, 39, 0.85);
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --border-color: rgba(148, 163, 184, 0.14);
+      --border-hover: rgba(59, 130, 246, 0.45);
+      --accent-blue: #3B82F6;
+      --accent-blue-hover: #2563EB;
+      --accent-violet: #8B5CF6;
+      --accent-emerald: #10B981;
+      --accent-amber: #F59E0B;
+      --accent-rose: #F43F5E;
+      --accent-cyan: #06B6D4;
+      --gradient-brand: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+      --gradient-surface: linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.02) 100%);
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 24px rgba(59, 130, 246, 0.25);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 22px;
+      --sidebar-width: 268px;
+      --header-height: 70px;
+      --transition: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #F1F5F9;
+      --bg-secondary: #FFFFFF;
+      --bg-tertiary: #E2E8F0;
+      --bg-elevated: #F8FAFC;
+      --bg-glass: rgba(255, 255, 255, 0.88);
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #64748B;
+      --border-color: rgba(15, 23, 42, 0.1);
+      --border-hover: rgba(37, 99, 235, 0.45);
+      --accent-blue: #2563EB;
+      --accent-blue-hover: #1D4ED8;
+      --accent-violet: #7C3AED;
+      --accent-emerald: #059669;
+      --accent-amber: #D97706;
+      --accent-rose: #E11D48;
+      --accent-cyan: #0891B2;
+      --gradient-surface: linear-gradient(180deg, rgba(37, 99, 235, 0.06) 0%, rgba(124, 58, 237, 0.02) 100%);
+      --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 18px 38px rgba(15, 23, 42, 0.12);
+      --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.18);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-tertiary);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       2. LAYOUT STRUCTURE (SIDEBAR + TOPBAR + VIEWS)
+       ========================================================================== */
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform var(--transition);
+    }
+
+    .brand-header {
+      height: var(--header-height);
+      padding: 0 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--gradient-brand);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      box-shadow: var(--shadow-glow);
+      flex-shrink: 0;
+    }
+
+    .brand-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 99px;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .nav-menu {
+      padding: 18px 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      overflow-y: auto;
+    }
+
+    .nav-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding: 10px 12px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.92rem;
+      transition: all var(--transition);
+      text-align: left;
+      width: 100%;
+    }
+
+    .nav-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-item svg {
+      width: 19px;
+      height: 19px;
+      flex-shrink: 0;
+      opacity: 0.85;
+    }
+
+    .nav-item:hover {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--gradient-brand);
+      color: #FFFFFF;
+      font-weight: 600;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .nav-item.active svg {
+      opacity: 1;
+    }
+
+    .nav-pill {
+      font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.14);
+      color: inherit;
+      font-weight: 600;
+    }
+
+    .nav-item:not(.active) .nav-pill {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+      background: var(--gradient-surface);
+    }
+
+    .engine-status-card {
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      font-size: 0.78rem;
+    }
+
+    .status-dot-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-emerald);
+      box-shadow: 0 0 8px var(--accent-emerald);
+    }
+
+    /* Main Content Area */
+    .main-wrapper {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      max-width: calc(100vw - var(--sidebar-width));
+    }
+
+    /* Top Header */
+    .top-header {
+      height: var(--header-height);
+      background-color: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      gap: 16px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      place-items: center;
+    }
+
+    .page-title-group h1 {
+      font-size: 1.18rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .page-title-group p {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .global-search-box {
+      position: relative;
+      width: 260px;
+    }
+
+    .global-search-box input {
+      width: 100%;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 8px 36px 8px 34px;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      transition: border-color var(--transition);
+    }
+
+    .global-search-box input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    .global-search-box svg {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 15px;
+      height: 15px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .kbd-hint {
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      pointer-events: none;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-primary);
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+      transition: all var(--transition);
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent-blue);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 5px 12px 5px 6px;
+      border-radius: 99px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .user-avatar {
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      background: var(--gradient-brand);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+
+    /* Views Container */
+    .view-container {
+      padding: 28px;
+      flex: 1;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .app-view {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .app-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       3. REUSABLE UI COMPONENTS (CARDS, BUTTONS, BADGES, FORMS)
+       ========================================================================== */
+    .card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .card:hover {
+      border-color: rgba(148, 163, 184, 0.24);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 1.02rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .card-subtitle {
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Grid Helpers */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .grid-asymmetric {
+      display: grid;
+      grid-template-columns: 1.65fr 1fr;
+      gap: 20px;
+    }
+
+    /* Stat Cards */
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-brand);
+      opacity: 0.85;
+    }
+
+    .stat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .stat-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: rgba(59, 130, 246, 0.12);
+      color: var(--accent-blue);
+    }
+
+    .stat-value {
+      font-size: 1.95rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .stat-meta {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.88rem;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    .btn svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .btn-primary {
+      background: var(--gradient-brand);
+      color: #FFFFFF;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent-blue);
+      background-color: rgba(59, 130, 246, 0.12);
+    }
+
+    .btn-danger {
+      background-color: rgba(244, 63, 94, 0.14);
+      color: var(--accent-rose);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+
+    .btn-danger:hover {
+      background-color: var(--accent-rose);
+      color: #FFFFFF;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-violet { background: rgba(139, 92, 246, 0.15); color: var(--accent-violet); border: 1px solid rgba(139, 92, 246, 0.3); }
+    .badge-emerald { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-rose { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.3); }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.6;
+    }
+
+    /* ==========================================================================
+       4. SPECIFIC VIEW STYLES
+       ========================================================================== */
+    /* Transparency Banner */
+    .transparency-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 13px 18px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(90deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.12));
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      margin-bottom: 22px;
+      font-size: 0.83rem;
+      flex-wrap: wrap;
+    }
+
+    /* Sample Problem Chips */
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 16px;
+    }
+
+    .sample-chip {
+      padding: 6px 12px;
+      border-radius: 99px;
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      transition: all var(--transition);
+    }
+
+    .sample-chip:hover {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+      background-color: rgba(59, 130, 246, 0.08);
+    }
+
+    /* Actionable Checklist Steps */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 16px;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+
+    .step-item.completed {
+      opacity: 0.65;
+      border-color: rgba(16, 185, 129, 0.35);
+      background-color: rgba(16, 185, 129, 0.05);
+    }
+
+    .step-item.completed .step-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .step-checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid var(--text-muted);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      transition: all var(--transition);
+    }
+
+    .step-item.completed .step-checkbox {
+      background-color: var(--accent-emerald);
+      border-color: var(--accent-emerald);
+      color: #fff;
+    }
+
+    /* Daily Tools Workspace */
+    .tools-layout {
+      display: grid;
+      grid-template-columns: 270px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .tools-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+    }
+
+    .tool-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 13px;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.87rem;
+      text-align: left;
+      transition: all var(--transition);
+    }
+
+    .tool-tab-btn:hover {
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .tool-tab-btn.active {
+      background: var(--gradient-brand);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .tool-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      opacity: 0.75;
+    }
+
+    .tool-panel {
+      display: none;
+    }
+
+    .tool-panel.active {
+      display: block;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    /* Progress Bars & Charts */
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      background-color: var(--bg-primary);
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-brand);
+      border-radius: 99px;
+      transition: width 0.35s ease;
+    }
+
+    .stacked-bar {
+      display: flex;
+      height: 18px;
+      width: 100%;
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 12px 0;
+      background: var(--bg-primary);
+    }
+
+    /* Eisenhower Matrix 4-Quadrant */
+    .eisenhower-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .quadrant-box {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      min-height: 165px;
+    }
+
+    .quadrant-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Pomodoro Display */
+    .pomodoro-box {
+      text-align: center;
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      background: var(--gradient-surface);
+      border: 1px solid var(--border-color);
+    }
+
+    .pomodoro-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 8px 0 14px;
+    }
+
+    /* Decision Maker Options */
+    .decision-option-card {
+      background-color: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .decision-winner-banner {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(59, 130, 246, 0.14));
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 42px 20px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state svg {
+      width: 44px;
+      height: 44px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      opacity: 0.65;
+    }
+
+    /* Toast Notification Container */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 360px;
+    }
+
+    .toast {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-blue);
+      border-radius: var(--radius-md);
+      padding: 13px 16px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      animation: slideInRight 0.25s ease-out;
+    }
+
+    .toast.success { border-left-color: var(--accent-emerald); }
+    .toast.warning { border-left-color: var(--accent-amber); }
+    .toast.error { border-left-color: var(--accent-rose); }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Custom Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 17, 0.75);
+      backdrop-filter: blur(5px);
+      z-index: 2000;
+      display: none;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open {
+      display: grid;
+    }
+
+    .modal-box {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      max-width: 600px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: var(--shadow-lg);
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1120px) {
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .grid-asymmetric, .tools-layout { grid-template-columns: 1fr; }
+      .tools-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 8px;
+      }
+      .tool-tab-btn { white-space: nowrap; }
+    }
+
+    @media (max-width: 820px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-wrapper {
+        margin-left: 0;
+        max-width: 100vw;
+      }
+      .mobile-menu-btn {
+        display: grid;
+      }
+      .grid-2, .grid-3, .eisenhower-grid {
+        grid-template-columns: 1fr;
+      }
+      .global-search-box {
+        display: none;
+      }
+      .view-container {
+        padding: 18px 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .grid-4 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- ==========================================================================
+       SIDEBAR NAVIGATION
+       ========================================================================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-header">
+      <a href="#dashboard" class="brand-logo" onclick="App.navigate('dashboard'); return false;">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <span>SolveX</span>
+      </a>
+      <span class="brand-badge">v2.5 PRO</span>
+    </div>
+
+    <nav class="nav-menu" aria-label="Main Navigation">
+      <div class="nav-section-label">Core Platform</div>
+      <button class="nav-item active" data-view="dashboard" onclick="App.navigate('dashboard')">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Home Dashboard
+        </span>
+      </button>
+
+      <button class="nav-item" data-view="solver" onclick="App.navigate('solver')">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          Solve a Problem
+        </span>
+        <span class="nav-pill">Engine</span>
+      </button>
+
+      <button class="nav-item" data-view="tools" onclick="App.navigate('tools')">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Daily Life Tools
+        </span>
+        <span class="nav-pill">10</span>
+      </button>
+
+      <button class="nav-item" data-view="decision" onclick="App.navigate('decision')">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+          Smart Decision Maker
+        </span>
+      </button>
+
+      <div class="nav-section-label">Tracking & Archive</div>
+      <button class="nav-item" data-view="goals" onclick="App.navigate('goals')">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          My Goals
+        </span>
+        <span class="nav-pill" id="navGoalsCount">0</span>
+      </button>
+
+      <button class="nav-item" data-view="history" onclick="App.navigate('history')">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Solution History
+        </span>
+        <span class="nav-pill" id="navHistoryCount">0</span>
+      </button>
+
+      <button class="nav-item" data-view="settings" onclick="App.navigate('settings')">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="engine-status-card">
+        <div class="status-dot-row">
+          <span class="status-dot"></span>
+          <span>Heuristic Engine Ready</span>
+        </div>
+        <div style="color: var(--text-muted); line-height: 1.4;">
+          100% LocalStorage offline privacy. Zero external API tracking.
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==========================================================================
+       MAIN CONTENT WRAPPER
+       ========================================================================== -->
+  <div class="main-wrapper">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="mobile-menu-btn" onclick="App.toggleMobileSidebar()" aria-label="Toggle Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="page-title-group">
+          <h1 id="headerTitle">Home Dashboard</h1>
+          <p id="headerSubtitle">Real-time productivity metrics, problem analytics, and active goals</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="global-search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="globalSearchInput" placeholder="Search saved solutions..." oninput="App.handleGlobalSearch(this.value)" />
+          <span class="kbd-hint">/</span>
+        </div>
+
+        <button class="icon-btn" onclick="App.toggleTheme()" title="Toggle Dark/Light Theme" aria-label="Toggle Theme">
+          <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <div class="user-chip" onclick="App.navigate('settings')" title="Edit Profile in Settings">
+          <div class="user-avatar" id="userAvatarInitials">SX</div>
+          <span id="userDisplayName">Solver</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="view-container">
+
+      <!-- ======================================================================
+           VIEW 1: HOME DASHBOARD
+           ====================================================================== -->
+      <section class="app-view active" id="view-dashboard">
+        <div class="grid-4" style="margin-bottom: 22px;">
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Total Problems Solved</span>
+              <div class="stat-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statProblemsSolved">0</div>
+            <div class="stat-meta">Structured diagnostic runs</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Completed Goals</span>
+              <div class="stat-icon" style="background: rgba(16, 185, 129, 0.14); color: var(--accent-emerald);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statCompletedGoals">0 / 0</div>
+            <div class="stat-meta" id="statGoalRateMeta">0% completion rate</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Saved Solutions & Decisions</span>
+              <div class="stat-icon" style="background: rgba(139, 92, 246, 0.14); color: var(--accent-violet);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statSavedSolutions">0</div>
+            <div class="stat-meta">Archived in Solution History</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Daily Productivity Index</span>
+              <div class="stat-icon" style="background: rgba(245, 158, 11, 0.14); color: var(--accent-amber);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statProductivityIndex">0%</div>
+            <div class="stat-meta">Computed from real app usage</div>
+          </div>
+        </div>
+
+        <!-- Quick Launch Banner -->
+        <div class="card" style="margin-bottom: 22px; background: var(--gradient-surface);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <span class="badge badge-blue" style="margin-bottom: 8px;">Interactive Problem-Solving Suite</span>
+              <h2 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 4px;">What challenge are we solving today?</h2>
+              <p style="font-size: 0.88rem; color: var(--text-secondary);">Break down complex life, financial, academic, or career problems into actionable milestones.</p>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="App.navigate('solver')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                Solve a Problem Now
+              </button>
+              <button class="btn btn-secondary" onclick="App.navigate('decision')">
+                Weighted Decision Matrix
+              </button>
+              <button class="btn btn-secondary" onclick="App.navigate('tools')">
+                Open 10 Daily Tools
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts & Activity Row -->
+        <div class="grid-asymmetric">
+          <!-- Left: Problem Category Analytics + Active Goals -->
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Problem Category Breakdown</div>
+                  <div class="card-subtitle">Live distribution from your saved problem-solving history</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="App.navigate('solver')">+ New Analysis</button>
+              </div>
+              <div id="dashboardCategoryChart"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Active Goal Progress</div>
+                  <div class="card-subtitle">Track milestones directly feeding your Productivity Index</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="App.navigate('goals')">Manage Goals</button>
+              </div>
+              <div id="dashboardGoalsPreview"></div>
+            </div>
+          </div>
+
+          <!-- Right: Live Activity Stream -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Recent Activity Feed</div>
+                <div class="card-subtitle">Real-time log of actions performed in SolveX</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="App.clearActivityLog()">Clear Log</button>
+            </div>
+            <div id="dashboardActivityFeed" style="display: flex; flex-direction: column; gap: 12px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 2: SOLVE A PROBLEM (RULE-BASED HEURISTIC ENGINE)
+           ====================================================================== -->
+      <section class="app-view" id="view-solver">
+        <div class="transparency-banner">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="badge badge-violet">Architecture Transparency</span>
+            <span><strong>Deterministic Heuristic & Rule-Based Engine (Non-AI):</strong> Analyzes weighted keywords, root-cause patterns, and domain frameworks locally without sending data to external servers.</span>
+          </div>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-muted);">Engine: SolveX-Rules-v2.5</span>
+        </div>
+
+        <div class="grid-asymmetric">
+          <!-- Input Column -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Describe Your Problem</div>
+                <div class="card-subtitle">Include symptoms, constraints, timeline, or trade-offs for higher confidence matching</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="problemInputText">Problem Statement & Context</label>
+              <textarea id="problemInputText" class="form-textarea" placeholder="Example: My monthly credit card bills and living expenses are higher than my paycheck, and I don't know how to stop living paycheck to paycheck..."></textarea>
+            </div>
+
+            <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);">Try a Quick Sample Scenario:</div>
+            <div class="chip-list">
+              <button class="sample-chip" onclick="ProblemEngine.loadSample('finance')">💸 Monthly expenses exceed income</button>
+              <button class="sample-chip" onclick="ProblemEngine.loadSample('study')">📚 Procrastinating on exam prep</button>
+              <button class="sample-chip" onclick="ProblemEngine.loadSample('career')">⚖️ Choosing between two job offers</button>
+              <button class="sample-chip" onclick="ProblemEngine.loadSample('time')">⏳ Burnout & overloaded schedule</button>
+              <button class="sample-chip" onclick="ProblemEngine.loadSample('health')">🏃 Poor sleep & inconsistent habits</button>
+              <button class="sample-chip" onclick="ProblemEngine.loadSample('conflict')">🤝 Team communication conflict</button>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 16px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="problemUrgencySelect">Perceived Urgency</label>
+                <select id="problemUrgencySelect" class="form-select">
+                  <option value="auto">Auto-Detect from Description</option>
+                  <option value="Critical">Critical (Immediate / Today)</option>
+                  <option value="High">High (This Week)</option>
+                  <option value="Medium">Medium (This Month)</option>
+                  <option value="Low">Low (Long-Term Optimization)</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="problemCategoryOverride">Category Filter (Optional)</label>
+                <select id="problemCategoryOverride" class="form-select">
+                  <option value="auto">Auto-Classify via Keyword Rules</option>
+                  <option value="finance">Personal Finance & Budgeting</option>
+                  <option value="time">Time Management & Overwhelm</option>
+                  <option value="study">Study & Academic Performance</option>
+                  <option value="career">Career & Decision Paralysis</option>
+                  <option value="health">Health, Energy & Habit Building</option>
+                  <option value="conflict">Conflict & Communication</option>
+                  <option value="general">General First-Principles (5 Whys)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="ProblemEngine.analyze()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Generate Structured Action Plan
+              </button>
+              <button class="btn btn-secondary" onclick="ProblemEngine.clear()">
+                Clear Input
+              </button>
+            </div>
+          </div>
+
+          <!-- Output Column -->
+          <div class="card" id="solverResultCard">
+            <div id="solverOutputContainer">
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Ready to Diagnose Your Problem</h3>
+                <p style="font-size: 0.84rem; max-width: 340px; margin: 0 auto;">Enter your challenge on the left or click a sample chip to generate a step-by-step action plan and tool recommendations.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 3: DAILY LIFE TOOLS (ALL 10 WORKING MINI-TOOLS)
+           ====================================================================== -->
+      <section class="app-view" id="view-tools">
+        <div class="tools-layout">
+          <!-- Left Tool Selector -->
+          <div class="tools-nav" role="tablist">
+            <button class="tool-tab-btn active" data-tool="budget" onclick="ToolsManager.switchTool('budget')">
+              <span class="tool-num">01</span> Smart Budget Planner
+            </button>
+            <button class="tool-tab-btn" data-tool="expense" onclick="ToolsManager.switchTool('expense')">
+              <span class="tool-num">02</span> Expense Calculator
+            </button>
+            <button class="tool-tab-btn" data-tool="study" onclick="ToolsManager.switchTool('study')">
+              <span class="tool-num">03</span> Study Planner
+            </button>
+            <button class="tool-tab-btn" data-tool="time" onclick="ToolsManager.switchTool('time')">
+              <span class="tool-num">04</span> Time Management
+            </button>
+            <button class="tool-tab-btn" data-tool="goalquick" onclick="ToolsManager.switchTool('goalquick')">
+              <span class="tool-num">05</span> Quick Goal Tracker
+            </button>
+            <button class="tool-tab-btn" data-tool="quickdecision" onclick="ToolsManager.switchTool('quickdecision')">
+              <span class="tool-num">06</span> Quick Decision Maker
+            </button>
+            <button class="tool-tab-btn" data-tool="productivity" onclick="ToolsManager.switchTool('productivity')">
+              <span class="tool-num">07</span> Productivity Calculator
+            </button>
+            <button class="tool-tab-btn" data-tool="percentage" onclick="ToolsManager.switchTool('percentage')">
+              <span class="tool-num">08</span> Percentage Calculator
+            </button>
+            <button class="tool-tab-btn" data-tool="age" onclick="ToolsManager.switchTool('age')">
+              <span class="tool-num">09</span> Exact Age Calculator
+            </button>
+            <button class="tool-tab-btn" data-tool="converter" onclick="ToolsManager.switchTool('converter')">
+              <span class="tool-num">10</span> Unit Converter
+            </button>
+          </div>
+
+          <!-- Right Active Tool Workspace -->
+          <div class="tools-workspace">
+
+            <!-- TOOL 1: SMART BUDGET PLANNER -->
+            <div class="tool-panel active card" id="tool-budget">
+              <div class="card-header">
+                <div>
+                  <span class="badge badge-emerald">Tool 01 • Personal Finance</span>
+                  <h2 class="card-title" style="margin-top: 6px;">Smart Budget Planner (50/30/20 & Custom Ratio)</h2>
+                  <p class="card-subtitle">Allocate monthly net income across Needs, Wants, and Savings/Debt Repayment</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div>
+                  <div class="form-group">
+                    <label class="form-label">Monthly Net After-Tax Income ($)</label>
+                    <input type="number" id="budgetIncome" class="form-input" value="4500" min="0" oninput="ToolsManager.calcBudget()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Essential Needs % (<span id="lblNeedsPct">50</span>%)</label>
+                    <input type="range" id="budgetNeedsPct" min="10" max="80" value="50" style="width:100%;" oninput="ToolsManager.calcBudget()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Lifestyle Wants % (<span id="lblWantsPct">30</span>%)</label>
+                    <input type="range" id="budgetWantsPct" min="5" max="70" value="30" style="width:100%;" oninput="ToolsManager.calcBudget()" />
+                  </div>
+                  <div style="display:flex; gap:8px;">
+                    <button class="btn btn-secondary btn-sm" onclick="ToolsManager.setBudgetPreset(50,30)">50/30/20 Standard</button>
+                    <button class="btn btn-secondary btn-sm" onclick="ToolsManager.setBudgetPreset(60,20)">60/20/20 Conservative</button>
+                    <button class="btn btn-secondary btn-sm" onclick="ToolsManager.setBudgetPreset(40,20)">40/20/40 Aggressive FIRE</button>
+                  </div>
+                </div>
+                <div id="budgetResultBox"></div>
+              </div>
+            </div>
+
+            <!-- TOOL 2: EXPENSE CALCULATOR -->
+            <div class="tool-panel card" id="tool-expense">
+              <div class="card-header">
+                <div>
+                  <span class="badge badge-blue">Tool 02 • Cashflow Tracking</span>
+                  <h2 class="card-title" style="margin-top: 6px;">Itemized Expense Calculator</h2>
+                  <p class="card-subtitle">Log recurring or one-off expenses, identify your highest cost driver, and persist data</p>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="ToolsManager.clearExpenses()">Clear All</button>
+              </div>
+              <div class="grid-3" style="margin-bottom: 16px;">
+                <input type="text" id="expName" class="form-input" placeholder="Expense item (e.g. Rent, Groceries)" />
+                <select id="expCategory" class="form-select">
+                  <option value="Housing & Utilities">Housing & Utilities</option>
+                  <option value="Food & Dining">Food & Dining</option>
+                  <option value="Transportation">Transportation</option>
+                  <option value="Subscriptions & Tech">Subscriptions & Tech</option>
+                  <option value="Debt & Loans">Debt & Loans</option>
+                  <option value="Discretionary">Discretionary</option>
+                </select>
+                <div style="display:flex; gap:8px;">
+                  <input type="number" id="expAmount" class="form-input" placeholder="Amount ($)" min="0" step="0.01" />
+                  <button class="btn btn-primary" onclick="ToolsManager.addExpense()">Add</button>
+                </div>
+              </div>
+              <div id="expenseSummaryArea"></div>
+            </div>
+
+            <!-- TOOL 3: STUDY PLANNER -->
+            <div class="tool-panel card" id="tool-study">
+              <div class="card-header">
+                <div>
+                  <span class="badge badge-violet">Tool 03 • Academic Optimizer</span>
+                  <h2 class="card-title" style="margin-top: 6px;">Weighted Study Timetable Generator</h2>
+                  <p class="card-subtitle">Automatically distributes your daily study hours proportionally to subject difficulty</p>
+                </div>
+              </div>
+              <div class="grid-3" style="margin-bottom: 14px;">
+                <div>
+                  <label class="form-label">Subject / Topic Name</label>
+                  <input type="text" id="studySubjectName" class="form-input" placeholder="e.g. Organic Chemistry" />
+                </div>
+                <div>
+                  <label class="form-label">Difficulty Weight (1=Easy, 5=Hard)</label>
+                  <select id="studyDifficulty" class="form-select">
+                    <option value="5">5 - Very Hard (High Priority)</option>
+                    <option value="4">4 - Hard</option>
+                    <option value="3" selected>3 - Moderate</option>
+                    <option value="2">2 - Easy</option>
+                    <option value="1">1 - Review Only</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">Total Daily Study Hours Available</label>
+                  <div style="display:flex; gap:8px;">
+                    <input type="number" id="studyDailyHours" class="form-input" value="6" min="1" max="16" onchange="ToolsManager.renderStudyPlan()" />
+                    <button class="btn btn-primary" onclick="ToolsManager.addStudySubject()">+ Add Topic</button>
+                  </div>
+                </div>
+              </div>
+              <div id="studyPlannerOutput"></div>
+            </div>
+
+            <!-- TOOL 4: TIME MANAGEMENT PLANNER -->
+            <div class="tool-panel card" id="tool-time">
+              <div class="card-header">
+                <div>
+                  <span class="badge badge-amber">Tool 04 • Focus & Prioritization</span>
+                  <h2 class="card-title" style="margin-top: 6px;">Eisenhower Matrix + Deep-Work Pomodoro Timer</h2>
+                  <p class="card-subtitle">Separate urgent noise from high-leverage tasks and execute in focused sprints</p>
+                </div>
+              </div>
+              <div class="grid-asymmetric">
+                <div>
+                  <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <input type="text" id="matrixTaskInput" class="form-input" placeholder="Enter task to prioritize..." />
+                    <select id="matrixQuadSelect" class="form-select" style="max-width:210px;">
+                      <option value="q1">Q1: Urgent & Important</option>
+                      <option value="q2">Q2: Important, Not Urgent</option>
+                      <option value="q3">Q3: Urgent, Not Important</option>
+                      <option value="q4">Q4: Neither (Eliminate)</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="ToolsManager.addMatrixTask()">Add</button>
+                  </div>
+                  <div class="eisenhower-grid" id="eisenhowerContainer"></div>
+                </div>
+                <div class="pomodoro-box">
+                  <span class="badge badge-blue" id="pomoModeLabel">25:00 Deep Focus Session</span>
+                  <div class="pomodoro-time" id="pomoDisplay">25:00</div>
+                  <div style="display:flex; justify-content:center; gap:8px; margin-bottom:14px;">
+                    <button class="btn btn-primary btn-sm" id="pomoStartBtn" onclick="ToolsManager.togglePomodoro()">Start</button>
+                    <button class="btn btn-secondary btn-sm" onclick="ToolsManager.resetPomodoro(25)">25m Focus</button>
+                    <button class="btn btn-secondary btn-sm" onclick="ToolsManager.resetPomodoro(5)">5m Break</button>
+                  </div>
+                  <p style="font-size:0.78rem; color:var(--text-secondary);">Completed Focus Sprints Today: <strong id="pomoCountDisplay">0</strong></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- TOOL 5: GOAL TRACKER (SYNCED WITH MAIN GOALS) -->
+            <div class="tool-panel card" id="tool-goalquick">
+              <div class="card-header">
+                <div>
+                  <span class="badge badge-emerald">Tool 05 • Milestone Execution</span>
+                  <h2 class="card-title" style="margin-top: 6px;">Rapid Goal Tracker</h2>
+                  <p class="card-subtitle">Two-way synced with your main "My Goals" workspace</p>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="App.navigate('goals')">Open Full Goals View →</button>
+              </div>
+              <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+                <input type="text" id="quickGoalTitle" class="form-input" placeholder="New goal title (e.g. Save $3,000 emergency fund)" style="flex:2;" />
+                <input type="text" id="quickGoalCategory" class="form-input" placeholder="Category (e.g. Finance)" style="flex:1;" />
+                <button class="btn btn-primary" onclick="GoalsManager.addQuickGoal()">Create Goal</button>
+              </div>
+              <div id="quickGoalsList"></div>
+            </div>
+
+            <!-- TOOL 6: QUICK DECISION MAKER -->
+            <div class="tool-panel card" id="tool-quickdecision">
+              <div class="card-header">
+                <div>
+                  <span class="badge badge-violet">Tool 06 • Rapid Tie-Breaker</span>
+                  <h2 class="card-title" style="margin-top: 6px;">Quick Decision Tie-Breaker & Gut-Check</h2>
+                  <p class="card-subtitle">For fast binary or multi-choice dilemmas when you need immediate clarity</p>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="App.navigate('decision')">Full Weighted Matrix →</button>
+              </div>
+              <div class="grid-2">
+                <div>
+                  <label class="form-label">Enter Options (One per line)</label>
+                  <textarea id="quickDecOptions" class="form-textarea" placeholder="Take the remote startup role&#10;Stay at current corporate job&#10;Negotiate hybrid 4-day week">Take the remote startup role
+Stay at current corporate job
+Negotiate hybrid 4-day week</textarea>
+                  <div style="display:flex; gap:10px; margin-top:12px;">
+                    <button class="btn btn-primary" onclick="ToolsManager.runQuickDecision()">Pick Optimal / Tie-Break</button>
+                  </div>
+                </div>
+                <div id="quickDecisionResult" style="display:grid; place-items:center; background:var(--bg-primary); border-radius:var(--radius-md); padding:20px; border:1px solid var(--border-color);">
+                  <div style="text-align:center; color:var(--text-secondary); font-size:0.86rem;">Click "Pick Optimal / Tie-Break" to run a gut-check simulation.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TOOL 7: PRODUCTIVITY CALCULATOR -->
+            <div class="tool-panel card" id="tool-productivity">
+              <div class="card-header">
+                <div>
+                  <span class="badge badge-blue">Tool 07 • Performance Diagnostic</span>
+                  <h2 class="card-title" style="margin-top: 6px;">Deep-Work & Productivity Efficiency Calculator</h2>
+                  <p class="card-subtitle">Quantify cognitive context-switching cost and true output efficiency</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div>
+                  <div class="form-group">
+                    <label class="form-label">Total Hours at Desk / Working Today</label>
+                    <input type="number" id="prodTotalHours" class="form-input" value="8" min="0.5" max="24" step="0.5" oninput="ToolsManager.calcProductivity()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Uninterrupted Deep-Work Hours</label>
+                    <input type="number" id="prodDeepHours" class="form-input" value="4.5" min="0" max="24" step="0.5" oninput="ToolsManager.calcProductivity()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Number of Distractions / Context Switches</label>
+                    <input type="number" id="prodDistractions" class="form-input" value="6" min="0" max="100" oninput="ToolsManager.calcProductivity()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">High-Priority Tasks Completed</label>
+                    <input type="number" id="prodTasksDone" class="form-input" value="4" min="0" max="50" oninput="ToolsManager.calcProductivity()" />
+                  </div>
+                </div>
+                <div id="prodCalcOutput"></div>
+              </div>
+            </div>
+
+            <!-- TOOL 8: PERCENTAGE CALCULATOR -->
+            <div class="tool-panel card" id="tool-percentage">
+              <div class="card-header">
+                <div>
+                  <span class="badge badge-emerald">Tool 08 • Financial & Math Utility</span>
+                  <h2 class="card-title" style="margin-top: 6px;">3-Way Live Percentage Calculator</h2>
+                  <p class="card-subtitle">Instant calculations as you type</p>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <div class="card" style="background:var(--bg-primary);">
+                  <div style="font-size:0.82rem; font-weight:600; color:var(--text-secondary); margin-bottom:8px;">1. What is X% of Y?</div>
+                  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <span>What is</span>
+                    <input type="number" id="pct1X" class="form-input" style="width:110px;" value="18" oninput="ToolsManager.calcPercentages()" />
+                    <span>% of</span>
+                    <input type="number" id="pct1Y" class="form-input" style="width:140px;" value="250" oninput="ToolsManager.calcPercentages()" />
+                    <span>=</span>
+                    <strong id="pct1Res" style="font-size:1.2rem; color:var(--accent-blue); font-family:'JetBrains Mono',monospace;">45.00</strong>
+                  </div>
+                </div>
+
+                <div class="card" style="background:var(--bg-primary);">
+                  <div style="font-size:0.82rem; font-weight:600; color:var(--text-secondary); margin-bottom:8px;">2. X is what percent of Y?</div>
+                  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <input type="number" id="pct2X" class="form-input" style="width:120px;" value="45" oninput="ToolsManager.calcPercentages()" />
+                    <span>is what % of</span>
+                    <input type="number" id="pct2Y" class="form-input" style="width:140px;" value="180" oninput="ToolsManager.calcPercentages()" />
+                    <span>=</span>
+                    <strong id="pct2Res" style="font-size:1.2rem; color:var(--accent-emerald); font-family:'JetBrains Mono',monospace;">25.00%</strong>
+                  </div>
+                </div>
+
+                <div class="card" style="background:var(--bg-primary);">
+                  <div style="font-size:0.82rem; font-weight:600; color:var(--text-secondary); margin-bottom:8px;">3. Percentage Change (Increase / Decrease from X to Y)</div>
+                  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <span>From</span>
+                    <input type="number" id="pct3X" class="form-input" style="width:120px;" value="120" oninput="ToolsManager.calcPercentages()" />
+                    <span>to</span>
+                    <input type="number" id="pct3Y" class="form-input" style="width:120px;" value="156" oninput="ToolsManager.calcPercentages()" />
+                    <span>=</span>
+                    <strong id="pct3Res" style="font-size:1.2rem; color:var(--accent-violet); font-family:'JetBrains Mono',monospace;">+30.00%</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TOOL 9: AGE CALCULATOR -->
+            <div class="tool-panel card" id="tool-age">
+              <div class="card-header">
+                <div>
+                  <span class="badge badge-amber">Tool 09 • Chronological Precision</span>
+                  <h2 class="card-title" style="margin-top: 6px;">Exact Chronological Age & Milestone Calculator</h2>
+                  <p class="card-subtitle">Calculates exact years, months, days, total hours lived, and next birthday countdown</p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div>
+                  <div class="form-group">
+                    <label class="form-label">Date of Birth</label>
+                    <input type="date" id="ageDobInput" class="form-input" value="1998-05-15" onchange="ToolsManager.calcAge()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Calculate Age As Of Date</label>
+                    <input type="date" id="ageTargetInput" class="form-input" onchange="ToolsManager.calcAge()" />
+                  </div>
+                  <button class="btn btn-primary" onclick="ToolsManager.calcAge()">Calculate Exact Breakdown</button>
+                </div>
+                <div id="ageResultOutput"></div>
+              </div>
+            </div>
+
+            <!-- TOOL 10: UNIT CONVERTER -->
+            <div class="tool-panel card" id="tool-converter">
+              <div class="card-header">
+                <div>
+                  <span class="badge badge-blue">Tool 10 • Scientific & Daily Conversion</span>
+                  <h2 class="card-title" style="margin-top: 6px;">Multi-Domain Bidirectional Unit Converter</h2>
+                  <p class="card-subtitle">Convert Length, Weight, Temperature, Digital Storage, and Time</p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Conversion Category</label>
+                <select id="convCategory" class="form-select" onchange="ToolsManager.populateConverterUnits()">
+                  <option value="length">Length & Distance</option>
+                  <option value="weight">Mass & Weight</option>
+                  <option value="temperature">Temperature (C / F / K)</option>
+                  <option value="data">Digital Storage (MB / GB / TB)</option>
+                  <option value="time">Time Duration</option>
+                </select>
+              </div>
+              <div class="grid-2" style="align-items: end;">
+                <div>
+                  <label class="form-label">From Value & Unit</label>
+                  <input type="number" id="convFromVal" class="form-input" value="1" oninput="ToolsManager.convertUnits('from')" style="margin-bottom:8px;" />
+                  <select id="convFromUnit" class="form-select" onchange="ToolsManager.convertUnits('from')"></select>
+                </div>
+                <div>
+                  <label class="form-label">To Value & Unit</label>
+                  <input type="number" id="convToVal" class="form-input" oninput="ToolsManager.convertUnits('to')" style="margin-bottom:8px;" />
+                  <select id="convToUnit" class="form-select" onchange="ToolsManager.convertUnits('from')"></select>
+                </div>
+              </div>
+              <div id="convFormulaNote" style="margin-top:14px; font-size:0.82rem; color:var(--text-secondary); font-family:'JetBrains Mono',monospace;"></div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 4: SMART DECISION MAKER (WEIGHTED MULTI-OPTION MATRIX)
+           ====================================================================== -->
+      <section class="app-view" id="view-decision">
+        <div class="grid-asymmetric">
+          <!-- Left: Builder -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Smart Decision Assistant (Weighted Matrix)</div>
+                <div class="card-subtitle">Compare options objectively by scoring Impact of Pros (1-10) vs Cost/Risk of Cons (1-10)</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="DecisionEngine.loadSampleDecision()">Load Sample Dilemma</button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Decision You Need to Make</label>
+              <input type="text" id="decisionTitleInput" class="form-input" placeholder="e.g., Should I relocate for the Senior Engineer offer or stay in my current city?" />
+            </div>
+
+            <div id="decisionOptionsBuilder"></div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+              <button class="btn btn-secondary" onclick="DecisionEngine.addOption()">+ Add Another Option</button>
+              <button class="btn btn-primary" onclick="DecisionEngine.evaluateDecision()">Calculate Optimal Recommendation</button>
+            </div>
+          </div>
+
+          <!-- Right: Mathematical Evaluation & Ranking -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Weighted Score & Recommendation</div>
+                <div class="card-subtitle">Mathematical ranking based on net utility & risk ratio</div>
+              </div>
+            </div>
+            <div id="decisionEvaluationOutput">
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+                <h3 style="font-size:1rem; font-weight:700; color:var(--text-primary); margin-bottom:6px;">No Decision Evaluated Yet</h3>
+                <p style="font-size:0.84rem;">Add at least two options with weighted pros and cons, or click "Load Sample Dilemma" to see how the engine ranks choices.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 5: MY GOALS
+           ====================================================================== -->
+      <section class="app-view" id="view-goals">
+        <div class="card" style="margin-bottom: 22px;">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Create New Actionable Goal</div>
+              <div class="card-subtitle">Goals directly update your Home Dashboard completion rate and Daily Productivity Score</div>
+            </div>
+          </div>
+          <div class="grid-4" style="align-items: end;">
+            <div>
+              <label class="form-label">Goal Title</label>
+              <input type="text" id="newGoalTitle" class="form-input" placeholder="e.g. Build 6-Month Emergency Fund" />
+            </div>
+            <div>
+              <label class="form-label">Domain Category</label>
+              <select id="newGoalCategory" class="form-select">
+                <option value="Finance">Finance</option>
+                <option value="Career & Skills">Career & Skills</option>
+                <option value="Health & Fitness">Health & Fitness</option>
+                <option value="Academic">Academic</option>
+                <option value="Personal Project">Personal Project</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Target Deadline</label>
+              <input type="date" id="newGoalDeadline" class="form-input" />
+            </div>
+            <div>
+              <button class="btn btn-primary" style="width: 100%;" onclick="GoalsManager.createGoal()">+ Add Goal to Tracker</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm" onclick="GoalsManager.setFilter('all')">All Goals</button>
+            <button class="btn btn-secondary btn-sm" onclick="GoalsManager.setFilter('active')">In Progress</button>
+            <button class="btn btn-secondary btn-sm" onclick="GoalsManager.setFilter('completed')">Completed</button>
+          </div>
+          <div style="font-size:0.83rem; color:var(--text-secondary);" id="goalsSummaryLabel"></div>
+        </div>
+
+        <div id="goalsGridContainer" class="grid-2"></div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 6: SOLUTION HISTORY
+           ====================================================================== -->
+      <section class="app-view" id="view-history">
+        <div class="card" style="margin-bottom: 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+            <div style="display:flex; gap:12px; flex:1; min-width:260px;">
+              <input type="text" id="historySearchInput" class="form-input" placeholder="Search saved problems, categories, or decisions..." oninput="HistoryManager.render()" />
+              <select id="historyTypeFilter" class="form-select" style="max-width:200px;" onchange="HistoryManager.render()">
+                <option value="all">All Record Types</option>
+                <option value="problem">Problem Solutions</option>
+                <option value="decision">Weighted Decisions</option>
+              </select>
+            </div>
+            <button class="btn btn-danger" onclick="HistoryManager.confirmClearAll()">
+              Delete All History
+            </button>
+          </div>
+        </div>
+
+        <div id="historyListContainer" style="display:flex; flex-direction:column; gap:14px;"></div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 7: SETTINGS
+           ====================================================================== -->
+      <section class="app-view" id="view-settings">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Workspace Preferences & Profile</div>
+                <div class="card-subtitle">Saved automatically to your browser's LocalStorage</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Display Name</label>
+              <input type="text" id="settingsUserName" class="form-input" placeholder="Your Name" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Interface Color Theme</label>
+              <select id="settingsThemeSelect" class="form-select" onchange="App.setTheme(this.value)">
+                <option value="dark">Deep Navy & Electric Blue (Dark SaaS Default)</option>
+                <option value="light">Crisp Slate & Pure White (Light Mode)</option>
+              </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="App.saveProfileSettings()">Save Preferences</button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Data Portability, Demo Seed & Reset</div>
+                <div class="card-subtitle">Manage your LocalStorage database with full control</div>
+              </div>
+            </div>
+
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+              All your solved problems, weighted decisions, expenses, study timetables, and goals live locally in your browser. You can export a JSON backup or load realistic sample data anytime.
+            </p>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn btn-secondary" onclick="App.exportBackupJSON()">
+                  Export JSON Backup
+                </button>
+                <label class="btn btn-secondary" style="cursor:pointer;">
+                  Import JSON Backup
+                  <input type="file" accept=".json" style="display:none;" onchange="App.importBackupJSON(event)" />
+                </label>
+              </div>
+
+              <hr style="border:none; border-top:1px solid var(--border-color); margin: 4px 0;" />
+
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn btn-secondary" onclick="App.loadDemoSeedData()">
+                  Load Demo Seed Data
+                </button>
+                <button class="btn btn-danger" onclick="App.confirmFactoryReset()">
+                  Factory Reset All Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     CUSTOM MODAL (CONFIRMATIONS & RECORD DETAILS)
+     ========================================================================== -->
+<div class="modal-backdrop" id="customModal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <h3 id="modalTitle" style="font-size:1.1rem; font-weight:700;">Confirmation</h3>
+      <button class="icon-btn" onclick="App.closeModal()" aria-label="Close Modal">✕</button>
+    </div>
+    <div id="modalBody" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px; line-height:1.6;"></div>
+    <div id="modalFooter" style="display:flex; justify-content:flex-end; gap:10px;"></div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==========================================================================
+     MODULAR VANILLA JAVASCRIPT ENGINE
+     ========================================================================== -->
+<script>
+/**
+ * ============================================================================
+ * SOLVEX CORE STORAGE & APPLICATION CONTROLLER
+ * ============================================================================
+ */
+const STORAGE_KEY = 'SOLVEX_ENTERPRISE_STATE_V2';
+
+const DefaultState = () => ({
+  settings: {
+    userName: 'Alex Mercer',
+    theme: 'dark'
+  },
+  stats: {
+    problemsSolvedCount: 2,
+    pomodoroCompleted: 3
+  },
+  history: [
+    {
+      id: 'sol-demo-1',
+      type: 'problem',
+      title: 'Monthly expenses and credit card bills are growing faster than my income',
+      category: 'Personal Finance & Budgeting',
+      difficulty: 'Moderate',
+      priority: 'High',
+      confidence: 94,
+      rootCause: 'Cashflow opacity combined with high-interest revolving utilization and unallocated discretionary spending.',
+      steps: [
+        { text: 'Audit the last 60 days of bank statements and categorize every recurring subscription.', done: true },
+        { text: 'Apply the 50/30/20 or 60/20/20 rule in the Smart Budget Planner to cap fixed overhead.', done: true },
+        { text: 'List debts by APR and allocate 100% of surplus cash to the highest APR balance (Avalanche Method).', done: false },
+        { text: 'Automate transfers to an emergency buffer on payday before discretionary spending begins.', done: false }
+      ],
+      recommendedTools: ['budget', 'expense', 'percentage'],
+      createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+    },
+    {
+      id: 'sol-demo-2',
+      type: 'decision',
+      title: 'Accept Remote Product Lead Offer vs. Stay at Current Company',
+      category: 'Weighted Decision Analysis',
+      difficulty: 'Complex',
+      priority: 'High',
+      confidence: 91,
+      rootCause: 'Winner: Accept Remote Product Lead Offer (Net Score: +16 vs +5)',
+      steps: [
+        { text: 'Verified 24% higher net weighted score for Remote Product Lead Offer.', done: true },
+        { text: 'Mitigate top risk (onboarding velocity) by requesting a 30-60-90 day expectation charter.', done: false }
+      ],
+      recommendedTools: ['budget', 'goalquick'],
+      createdAt: new Date(Date.now() - 3600000 * 14).toISOString()
+    }
+  ],
+  goals: [
+    {
+      id: 'goal-1',
+      title: 'Build $5,000 High-Yield Emergency Buffer',
+      category: 'Finance',
+      deadline: '2026-12-31',
+      progress: 65,
+      completed: false
+    },
+    {
+      id: 'goal-2',
+      title: 'Complete System Architecture Certification',
+      category: 'Career & Skills',
+      deadline: '2026-11-30',
+      progress: 100,
+      completed: true
+    },
+    {
+      id: 'goal-3',
+      title: 'Maintain 25 Hours/Week Deep Focus Block',
+      category: 'Personal Project',
+      deadline: '2026-11-20',
+      progress: 40,
+      completed: false
+    }
+  ],
+  expenses: [
+    { id: 'exp-1', name: 'Apartment Rent & Utilities', category: 'Housing & Utilities', amount: 1650 },
+    { id: 'exp-2', name: 'Groceries & Meal Prep', category: 'Food & Dining', amount: 520 },
+    { id: 'exp-3', name: 'Cloud & SaaS Subscriptions', category: 'Subscriptions & Tech', amount: 85 },
+    { id: 'exp-4', name: 'Transit & Fuel', category: 'Transportation', amount: 210 }
+  ],
+  studySubjects: [
+    { id: 'st-1', name: 'Algorithms & Data Structures', difficulty: 5 },
+    { id: 'st-2', name: 'Distributed Systems Design', difficulty: 4 },
+    { id: 'st-3', name: 'Technical Writing & Specs', difficulty: 2 }
+  ],
+  matrixTasks: {
+    q1: ['Resolve production billing bug', 'Submit tax filing documents'],
+    q2: ['Design Q4 career roadmap', 'Refactor core analytics module'],
+    q3: ['Reply to non-critical vendor emails'],
+    q4: ['Unstructured social media browsing']
+  },
+  activities: [
+    { text: 'Completed goal "Complete System Architecture Certification"', time: 'Yesterday' },
+    { text: 'Evaluated weighted decision "Remote Product Lead Offer"', time: '14 hours ago' },
+    { text: 'Solved financial cashflow problem via Rule Engine', time: '2 days ago' }
+  ]
+});
+
+let State = null;
+
+const App = {
+  init() {
+    this.loadState();
+    this.applyTheme(State.settings.theme);
+    this.updateUserHeader();
+    this.renderDashboard();
+    ProblemEngine.init();
+    ToolsManager.init();
+    DecisionEngine.init();
+    GoalsManager.render();
+    HistoryManager.render();
+    this.setupKeyboardShortcuts();
+  },
+
+  loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        State = JSON.parse(raw);
+      } else {
+        State = DefaultState();
+        this.saveState();
+      }
+    } catch (err) {
+      State = DefaultState();
+    }
+  },
+
+  saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(State));
+      this.updateNavBadges();
+    } catch (err) {
+      this.toast('LocalStorage quota warning: unable to persist latest change.', 'warning');
+    }
+  },
+
+  logActivity(text) {
+    State.activities.unshift({
+      text,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+    if (State.activities.length > 18) State.activities.pop();
+    this.saveState();
+    this.renderDashboard();
+  },
+
+  clearActivityLog() {
+    State.activities = [];
+    this.saveState();
+    this.renderDashboard();
+    this.toast('Activity log cleared.', 'info');
+  },
+
+  navigate(viewId) {
+    document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+    const target = document.getElementById(`view-${viewId}`);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.view === viewId);
+    });
+
+    const viewMeta = {
+      dashboard: ['Home Dashboard', 'Real-time productivity metrics, problem analytics, and active goals'],
+      solver: ['Solve a Problem', 'Deterministic keyword & heuristic diagnostic engine with actionable checklists'],
+      tools: ['Daily Life Tools', '10 practical interactive calculators and planners for everyday execution'],
+      decision: ['Smart Decision Maker', 'Multi-option weighted pros & cons matrix with mathematical ranking'],
+      goals: ['My Goals', 'Track milestones, progress bars, and completion metrics'],
+      history: ['Solution History', 'Search, review, copy, or export your saved solutions and decisions'],
+      settings: ['Settings & Data Portability', 'Customize theme, profile, JSON backups, or reset state']
+    };
+
+    if (viewMeta[viewId]) {
+      document.getElementById('headerTitle').textContent = viewMeta[viewId][0];
+      document.getElementById('headerSubtitle').textContent = viewMeta[viewId][1];
+    }
+
+    document.getElementById('sidebar').classList.remove('open');
+
+    if (viewId === 'dashboard') this.renderDashboard();
+    if (viewId === 'goals') GoalsManager.render();
+    if (viewId === 'history') HistoryManager.render();
+    if (viewId === 'settings') {
+      document.getElementById('settingsUserName').value = State.settings.userName;
+      document.getElementById('settingsThemeSelect').value = State.settings.theme;
+    }
+  },
+
+  toggleMobileSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+  },
+
+  toggleTheme() {
+    const next = State.settings.theme === 'dark' ? 'light' : 'dark';
+    this.setTheme(next);
+  },
+
+  setTheme(theme) {
+    State.settings.theme = theme;
+    this.applyTheme(theme);
+    this.saveState();
+    this.toast(`Switched to ${theme === 'dark' ? 'Dark Navy' : 'Light Slate'} theme`, 'info');
+  },
+
+  applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const select = document.getElementById('settingsThemeSelect');
+    if (select) select.value = theme;
+  },
+
+  updateUserHeader() {
+    const name = State.settings.userName || 'Solver';
+    document.getElementById('userDisplayName').textContent = name;
+    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'SX';
+    document.getElementById('userAvatarInitials').textContent = initials;
+    this.updateNavBadges();
+  },
+
+  updateNavBadges() {
+    const activeGoals = State.goals.filter(g => !g.completed).length;
+    document.getElementById('navGoalsCount').textContent = activeGoals;
+    document.getElementById('navHistoryCount').textContent = State.history.length;
+  },
+
+  saveProfileSettings() {
+    const val = document.getElementById('settingsUserName').value.trim();
+    if (!val) {
+      this.toast('Please enter a valid display name.', 'warning');
+      return;
+    }
+    State.settings.userName = val;
+    this.updateUserHeader();
+    this.logActivity(`Updated workspace profile name to "${val}"`);
+    this.toast('Profile preferences saved!', 'success');
+  },
+
+  handleGlobalSearch(query) {
+    if (query.trim().length > 0) {
+      this.navigate('history');
+      const histInput = document.getElementById('historySearchInput');
+      histInput.value = query;
+      HistoryManager.render();
+    }
+  },
+
+  setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        document.getElementById('globalSearchInput').focus();
+      }
+      if (e.key === 'Escape') {
+        this.closeModal();
+        document.getElementById('sidebar').classList.remove('open');
+      }
+    });
+  },
+
+  /* ==========================================================================
+     REAL DATA DASHBOARD RENDERER
+     ========================================================================== */
+  renderDashboard() {
+    const totalSolved = State.stats.problemsSolvedCount;
+    const totalGoals = State.goals.length;
+    const completedGoals = State.goals.filter(g => g.completed || g.progress >= 100).length;
+    const goalRate = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
+    const avgGoalProgress = totalGoals > 0
+      ? Math.round(State.goals.reduce((acc, g) => acc + Number(g.progress), 0) / totalGoals)
+      : 0;
+
+    // Productivity Score derived strictly from real application state
+    const solveScore = Math.min(totalSolved * 12, 36);
+    const goalScore = Math.round(avgGoalProgress * 0.44);
+    const focusScore = Math.min((State.stats.pomodoroCompleted || 0) * 5, 20);
+    const productivityIndex = Math.min(100, solveScore + goalScore + focusScore);
+
+    document.getElementById('statProblemsSolved').textContent = totalSolved;
+    document.getElementById('statCompletedGoals').textContent = `${completedGoals} / ${totalGoals}`;
+    document.getElementById('statGoalRateMeta').textContent = `${goalRate}% completion rate (${avgGoalProgress}% avg progress)`;
+    document.getElementById('statSavedSolutions').textContent = State.history.length;
+    document.getElementById('statProductivityIndex').textContent = `${productivityIndex}%`;
+
+    // Render Category Breakdown Chart
+    const catCounts = {};
+    State.history.forEach(item => {
+      catCounts[item.category] = (catCounts[item.category] || 0) + 1;
+    });
+
+    const chartEl = document.getElementById('dashboardCategoryChart');
+    const entries = Object.entries(catCounts);
+    if (entries.length === 0) {
+      chartEl.innerHTML = `<div class="empty-state" style="padding:18px;">No saved solutions yet. Solve a problem to populate live category analytics.</div>`;
+    } else {
+      const maxCount = Math.max(...entries.map(e => e[1]));
+      chartEl.innerHTML = entries.map(([cat, count]) => {
+        const pct = Math.round((count / State.history.length) * 100);
+        const barWidth = Math.max(12, Math.round((count / maxCount) * 100));
+        return `
+          <div style="margin-bottom: 12px;">
+            <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:4px;">
+              <span style="font-weight:600;">${this.escapeHTML(cat)}</span>
+              <span style="color:var(--text-secondary); font-family:'JetBrains Mono',monospace;">${count} record(s) • ${pct}%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:${barWidth}%;"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Active Goals Preview
+    const goalsPreviewEl = document.getElementById('dashboardGoalsPreview');
+    if (State.goals.length === 0) {
+      goalsPreviewEl.innerHTML = `<div class="empty-state" style="padding:18px;">No goals created yet. Add a goal in "My Goals".</div>`;
+    } else {
+      goalsPreviewEl.innerHTML = State.goals.slice(0, 4).map(g => `
+        <div style="padding:12px; background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong style="font-size:0.88rem;">${this.escapeHTML(g.title)}</strong>
+            <span class="badge ${g.completed ? 'badge-emerald' : 'badge-blue'}">${g.progress}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${g.progress}%;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render Activity Feed
+    const feedEl = document.getElementById('dashboardActivityFeed');
+    if (State.activities.length === 0) {
+      feedEl.innerHTML = `<div class="empty-state" style="padding:20px;">No recent activities logged.</div>`;
+    } else {
+      feedEl.innerHTML = State.activities.slice(0, 8).map(act => `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding:10px 12px; background:var(--bg-primary); border-radius:var(--radius-sm); border:1px solid var(--border-color); font-size:0.82rem;">
+          <span>${this.escapeHTML(act.text)}</span>
+          <span style="color:var(--text-muted); font-family:'JetBrains Mono',monospace; font-size:0.72rem; white-space:nowrap;">${this.escapeHTML(act.time)}</span>
+        </div>
+      `).join('');
+    }
+  },
+
+  /* ==========================================================================
+     BACKUP, DEMO SEED, AND RESET ACTIONS
+     ========================================================================== */
+  exportBackupJSON() {
+    const dataStr = JSON.stringify(State, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SolveX-Backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.toast('JSON Backup downloaded successfully.', 'success');
+  },
+
+  importBackupJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (parsed && parsed.settings && Array.isArray(parsed.history)) {
+          State = parsed;
+          this.saveState();
+          this.init();
+          this.toast('Backup restored successfully!', 'success');
+        } else {
+          this.toast('Invalid SolveX backup JSON schema.', 'error');
+        }
+      } catch (err) {
+        this.toast('Could not parse JSON file.', 'error');
+      }
+    };
+    reader.readAsText(file);
+  },
+
+  loadDemoSeedData() {
+    State = DefaultState();
+    this.saveState();
+    this.init();
+    this.toast('Demo seed data loaded into workspace!', 'success');
+  },
+
+  confirmFactoryReset() {
+    this.openModal(
+      'Reset All Application Data?',
+      'This will permanently clear your saved problem history, custom goals, itemized expenses, and settings from LocalStorage. This action cannot be undone.',
+      [
+        { label: 'Cancel', class: 'btn-secondary', onClick: () => App.closeModal() },
+        {
+          label: 'Confirm Factory Reset',
+          class: 'btn-danger',
+          onClick: () => {
+            State = {
+              settings: { userName: 'Solver', theme: State.settings.theme },
+              stats: { problemsSolvedCount: 0, pomodoroCompleted: 0 },
+              history: [],
+              goals: [],
+              expenses: [],
+              studySubjects: [],
+              matrixTasks: { q1: [], q2: [], q3: [], q4: [] },
+              activities: [{ text: 'Workspace factory reset to clean state', time: 'Just now' }]
+            };
+            App.saveState();
+            App.init();
+            App.closeModal();
+            App.toast('All data cleared. Fresh workspace initialized.', 'warning');
+          }
+        }
+      ]
+    );
+  },
+
+  /* ==========================================================================
+     UTILITIES: TOAST, MODAL, CLIPBOARD, TXT EXPORT
+     ========================================================================== */
+  toast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<span>${this.escapeHTML(message)}</span>`;
+    container.appendChild(el);
+    setTimeout(() => {
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 250);
+    }, 3400);
+  },
+
+  openModal(title, bodyHTML, buttons = []) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').innerHTML = bodyHTML;
+    const footer = document.getElementById('modalFooter');
+    footer.innerHTML = '';
+    buttons.forEach(btn => {
+      const b = document.createElement('button');
+      b.className = `btn ${btn.class || 'btn-secondary'}`;
+      b.textContent = btn.label;
+      b.onclick = btn.onClick;
+      footer.appendChild(b);
+    });
+    document.getElementById('customModal').classList.add('open');
+  },
+
+  closeModal() {
+    document.getElementById('customModal').classList.remove('open');
+  },
+
+  copyText(text, label = 'Copied to clipboard!') {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      this.toast(label, 'success');
+    } catch (e) {
+      this.toast('Failed to copy text.', 'error');
+    }
+    document.body.removeChild(ta);
+  },
+
+  downloadTxtFile(filename, content) {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    this.toast(`Downloaded ${filename}`, 'success');
+  },
+
+  escapeHTML(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+};
+
+/**
+ * ============================================================================
+ * MODULE 1: DETERMINISTIC RULE-BASED PROBLEM SOLVING ENGINE
+ * ============================================================================
+ */
+const ProblemEngine = {
+  currentAnalysis: null,
+
+  knowledgeBase: {
+    finance: {
+      category: 'Personal Finance & Budgeting',
+      keywords: ['money', 'budget', 'debt', 'loan', 'credit', 'expense', 'expenses', 'income', 'salary', 'paycheck', 'rent', 'save', 'saving', 'savings', 'bills', 'bill', 'financial', 'overspending', 'interest', 'broke', 'cash'],
+      difficulty: 'Moderate',
+      priority: 'High',
+      rootCause: 'Structural imbalance between fixed/variable outflows and net inflows, compounded by unmonitored recurring leaks or high-interest debt.',
+      steps: [
+        'Run a 30-day zero-based expense audit: list every fixed bill and variable leak inside the SolveX Expense Calculator.',
+        'Establish a strict 50/30/20 or 60/20/20 ceiling using the Smart Budget Planner to stop lifestyle creep immediately.',
+        'Pause all non-essential subscriptions for 60 days and redirect 100% of freed cash toward an emergency starter buffer ($1,000) or highest-APR debt.',
+        'Set up automated split-deposit transfers on payday so savings happen before discretionary spending.'
+      ],
+      tools: [
+        { id: 'budget', name: 'Smart Budget Planner' },
+        { id: 'expense', name: 'Expense Calculator' },
+        { id: 'percentage', name: 'Percentage Calculator' }
+      ]
+    },
+    time: {
+      category: 'Time Management & Overwhelm',
+      keywords: ['time', 'busy', 'overwhelmed', 'burnout', 'schedule', 'deadline', 'late', 'procrastinate', 'procrastinating', 'distracted', 'multitasking', 'focus', 'hours', 'workload', 'stress', 'overloaded'],
+      difficulty: 'Moderate',
+      priority: 'High',
+      rootCause: 'Cognitive overload caused by treating urgent low-impact interruptions as equal to high-leverage strategic priorities.',
+      steps: [
+        'Perform a complete brain-dump of all open loops and sort them into the 4-Quadrant Eisenhower Matrix.',
+        'Eliminate or delegate Quadrant 3 & 4 tasks; pick only ONE Quadrant 1/2 deliverable for your morning peak energy block.',
+        'Execute two uninterrupted 25-minute Pomodoro sprints with phone notifications physically out of reach.',
+        'Audit your daily deep-work ratio in the Productivity Calculator and cap daily context switches.'
+      ],
+      tools: [
+        { id: 'time', name: 'Eisenhower & Pomodoro Planner' },
+        { id: 'productivity', name: 'Productivity Calculator' },
+        { id: 'goalquick', name: 'Quick Goal Tracker' }
+      ]
+    },
+    study: {
+      category: 'Study & Academic Performance',
+      keywords: ['study', 'exam', 'test', 'grade', 'university', 'college', 'school', 'homework', 'course', 'lecture', 'memorize', 'syllabus', 'revision', 'finals', 'learning', 'subject'],
+      difficulty: 'Moderate',
+      priority: 'High',
+      rootCause: 'Passive re-reading instead of active recall, combined with unweighted study allocation across high-difficulty topics.',
+      steps: [
+        'Input all exam topics and assign difficulty weights (1–5) in the SolveX Study Planner to allocate daily hours mathematically.',
+        'Replace passive highlighting with Active Recall (flashcards / closed-book practice problems) for 70% of each session.',
+        'Use spaced repetition intervals (Day 1, Day 3, Day 7, Day 14) and track topic mastery as measurable milestones.',
+        'Work in 25-minute Pomodoro blocks followed by 5-minute recall summaries without looking at notes.'
+      ],
+      tools: [
+        { id: 'study', name: 'Weighted Study Planner' },
+        { id: 'time', name: 'Pomodoro Focus Timer' },
+        { id: 'goalquick', name: 'Quick Goal Tracker' }
+      ]
+    },
+    career: {
+      category: 'Career & Decision Paralysis',
+      keywords: ['job', 'career', 'offer', 'promotion', 'quit', 'resign', 'interview', 'boss', 'company', 'switch', 'choose', 'choosing', 'option', 'dilemma', 'startup', 'corporate', 'relocate', 'freelance'],
+      difficulty: 'Complex',
+      priority: 'High',
+      rootCause: 'Decision paralysis triggered by comparing multi-variable options emotionally in working memory instead of using a weighted utility matrix.',
+      steps: [
+        'Define your top 4 non-negotiable criteria (Total Compensation, Growth Trajectory, Autonomy, Work-Life Balance).',
+        'Open the Smart Decision Maker and score every Pros impact (1–10) and Cons risk (1–10) across each option.',
+        'Apply the 10-10-10 Rule: evaluate how this choice impacts you in 10 weeks, 10 months, and 10 years.',
+        'Calculate the financial delta of the transition using the Smart Budget Planner before signing.'
+      ],
+      tools: [
+        { id: 'quickdecision', name: 'Quick Decision Maker' },
+        { id: 'budget', name: 'Smart Budget Planner' },
+        { id: 'goalquick', name: 'Quick Goal Tracker' }
+      ]
+    },
+    health: {
+      category: 'Health, Energy & Habit Building',
+      keywords: ['sleep', 'tired', 'energy', 'workout', 'exercise', 'diet', 'weight', 'habit', 'routine', 'morning', 'health', 'fitness', 'insomnia', 'fatigue', 'laziness', 'consistency'],
+      difficulty: 'Easy-Moderate',
+      priority: 'Medium',
+      rootCause: 'Relying on fluctuating willpower rather than friction-free environmental cues and atomic baseline habits.',
+      steps: [
+        'Shrink the target habit to a 2-Minute Baseline version (e.g., put on running shoes or read 2 pages) so consistency beats intensity.',
+        'Anchor the new habit immediately after an existing daily trigger (Habit Stacking: "After morning coffee, I will...").',
+        'Fix circadian rhythm by locking a consistent wake-up time and cutting blue light 60 minutes before sleep.',
+        'Track your streak inside My Goals and never miss two days in a row.'
+      ],
+      tools: [
+        { id: 'goalquick', name: 'Quick Goal Tracker' },
+        { id: 'time', name: 'Time Management Planner' },
+        { id: 'age', name: 'Chronological Age Calculator' }
+      ]
+    },
+    conflict: {
+      category: 'Conflict & Communication',
+      keywords: ['conflict', 'argument', 'team', 'colleague', 'manager', 'partner', 'communication', 'misunderstanding', 'feedback', 'negotiate', 'disagree', 'toxic', 'client', 'relationship'],
+      difficulty: 'Complex',
+      priority: 'High',
+      rootCause: 'Conflating objective facts with assumed intentions, leading to defensive escalation rather than shared problem-solving.',
+      steps: [
+        'Write down the strictly observable facts separated from your emotional interpretation (Non-Violent Communication framework).',
+        'Frame the conversation around shared outcomes: "When [X happens], the impact on [project/goal] is [Y]. How can we solve this together?"',
+        'Listen to understand constraints first, then propose two concrete options using the Decision Matrix.',
+        'Document agreed action items and deadlines in writing immediately after the conversation.'
+      ],
+      tools: [
+        { id: 'quickdecision', name: 'Quick Decision Maker' },
+        { id: 'time', name: 'Eisenhower Matrix' }
+      ]
+    },
+    general: {
+      category: 'General Structured Problem Solving (First-Principles)',
+      keywords: [],
+      difficulty: 'Moderate',
+      priority: 'Medium',
+      rootCause: 'Unstructured problem definition—attempting to jump to solutions before isolating root causes via the 5 Whys framework.',
+      steps: [
+        'Define the problem in a single quantifiable sentence: What is happening now vs. what is the desired state?',
+        'Apply the "5 Whys" Root-Cause Drill: ask "Why did this happen?" five consecutive times until you hit a controllable system variable.',
+        'Deconstruct the bottleneck into 3 independent milestones and log them inside the Goal Tracker.',
+        'Execute the highest-leverage 20% action today that resolves 80% of the friction (Pareto Principle).'
+      ],
+      tools: [
+        { id: 'goalquick', name: 'Quick Goal Tracker' },
+        { id: 'quickdecision', name: 'Quick Decision Maker' },
+        { id: 'time', name: 'Time Management Planner' }
+      ]
+    }
+  },
+
+  init() {},
+
+  loadSample(type) {
+    const samples = {
+      finance: "My monthly expenses and credit card bills exceed my paycheck. I keep dipping into savings for groceries and subscriptions, and I need a concrete plan to stop living paycheck to paycheck.",
+      study: "I have three major university finals in 3 weeks, but I keep procrastinating and feeling overwhelmed by the syllabus. I don't know how many hours to allocate to my hardest subjects.",
+      career: "I am stuck choosing between two job offers: one is a stable corporate role with average pay, and the other is a fast-growing remote startup with higher salary but more risk.",
+      time: "My daily schedule is completely overloaded with back-to-back meetings, urgent messages, and tasks. I work 10 hours a day but never finish my most important strategic projects.",
+      health: "My sleep schedule is inconsistent, I wake up exhausted with low energy, and every time I try to start a workout or morning habit routine I quit after four days.",
+      conflict: "A key team member keeps missing sprint deadlines and gets defensive when I bring it up. It is delaying our product launch and creating tension in meetings."
+    };
+    document.getElementById('problemInputText').value = samples[type] || '';
+    this.analyze();
+  },
+
+  clear() {
+    document.getElementById('problemInputText').value = '';
+    document.getElementById('problemUrgencySelect').value = 'auto';
+    document.getElementById('problemCategoryOverride').value = 'auto';
+  },
+
+  analyze() {
+    const rawText = document.getElementById('problemInputText').value.trim();
+    if (rawText.length < 8) {
+      App.toast('Please describe your problem in at least a few words so the rule engine can analyze it.', 'warning');
+      return;
+    }
+
+    const urgencyOverride = document.getElementById('problemUrgencySelect').value;
+    const catOverride = document.getElementById('problemCategoryOverride').value;
+    const lower = rawText.toLowerCase();
+
+    let bestKey = 'general';
+    let highestHits = 0;
+
+    if (catOverride !== 'auto' && this.knowledgeBase[catOverride]) {
+      bestKey = catOverride;
+      highestHits = 4;
+    } else {
+      Object.entries(this.knowledgeBase).forEach(([key, domain]) => {
+        if (key === 'general') return;
+        let hits = 0;
+        domain.keywords.forEach(kw => {
+          const regex = new RegExp(`\\b${kw}\\b`, 'i');
+          if (regex.test(lower)) hits += 2;
+          else if (lower.includes(kw)) hits += 1;
+        });
+        if (hits > highestHits) {
+          highestHits = hits;
+          bestKey = key;
+        }
+      });
+    }
+
+    const template = this.knowledgeBase[bestKey];
+    const isFallback = bestKey === 'general' && catOverride === 'auto';
+    const confidence = isFallback ? 68 : Math.min(98, 74 + highestHits * 4);
+
+    let priority = template.priority;
+    if (urgencyOverride !== 'auto') {
+      priority = urgencyOverride;
+    } else if (/urgent|immediately|today|crisis|emergency|deadline tomorrow/i.test(lower)) {
+      priority = 'Critical';
+    }
+
+    this.currentAnalysis = {
+      id: 'sol-' + Date.now(),
+      type: 'problem',
+      title: rawText.length > 90 ? rawText.substring(0, 90) + '...' : rawText,
+      fullProblem: rawText,
+      category: template.category,
+      difficulty: template.difficulty,
+      priority,
+      confidence,
+      isFallback,
+      rootCause: template.rootCause,
+      steps: template.steps.map(s => ({ text: s, done: false })),
+      recommendedTools: template.tools,
+      createdAt: new Date().toISOString()
+    };
+
+    State.stats.problemsSolvedCount += 1;
+    App.logActivity(`Diagnosed problem in "${template.category}"`);
+    this.renderOutput();
+    App.toast(`Classified under "${template.category}" (${confidence}% heuristic match)`, 'success');
+  },
+
+  renderOutput() {
+    const res = this.currentAnalysis;
+    if (!res) return;
+
+    const priorityClass = {
+      Critical: 'badge-rose',
+      High: 'badge-amber',
+      Medium: 'badge-blue',
+      Low: 'badge-emerald'
+    }[res.priority] || 'badge-blue';
+
+    const container = document.getElementById('solverOutputContainer');
+    container.innerHTML = `
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+          <div>
+            <span class="badge badge-blue">${App.escapeHTML(res.category)}</span>
+            <span class="badge ${priorityClass}">Priority: ${App.escapeHTML(res.priority)}</span>
+            <span class="badge badge-violet">Difficulty: ${App.escapeHTML(res.difficulty)}</span>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:0.78rem; color:var(--accent-emerald); font-weight:600;">
+            Rule Match: ${res.confidence}%
+          </span>
+        </div>
+
+        ${res.isFallback ? `
+          <div style="padding:10px 14px; background:rgba(245, 158, 11, 0.12); border:1px solid rgba(245, 158, 11, 0.35); border-radius:var(--radius-sm); font-size:0.8rem; color:var(--accent-amber); margin-bottom:14px;">
+            <strong>Fallback Notice:</strong> No specialized domain keywords matched strongly. Applying universal First-Principles & 5-Whys structured decomposition.
+          </div>
+        ` : ''}
+
+        <div style="padding:14px; background:var(--bg-primary); border-radius:var(--radius-md); border:1px solid var(--border-color); margin-bottom:16px;">
+          <div style="font-size:0.76rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px;">Root-Cause Diagnostic</div>
+          <div style="font-size:0.88rem; color:var(--text-primary);">${App.escapeHTML(res.rootCause)}</div>
+        </div>
+
+        <div style="font-size:0.84rem; font-weight:700; margin-bottom:8px;">Actionable Execution Steps (Click to check off):</div>
+        <div class="step-list">
+          ${res.steps.map((step, idx) => `
+            <div class="step-item ${step.done ? 'completed' : ''}" onclick="ProblemEngine.toggleStep(${idx})">
+              <div class="step-checkbox">${step.done ? '✓' : ''}</div>
+              <div class="step-text" style="font-size:0.87rem;"><strong>Step ${idx + 1}:</strong> ${App.escapeHTML(step.text)}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div style="margin: 16px 0;">
+          <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">Recommended SolveX Mini-Tools for This Problem:</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            ${res.recommendedTools.map(t => `
+              <button class="btn btn-secondary btn-sm" onclick="ProblemEngine.launchTool('${t.id}')">
+                Launch ${App.escapeHTML(t.name)} →
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--border-color); margin: 16px 0;" />
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="ProblemEngine.saveCurrentToHistory()">
+            Save Solution to History
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="ProblemEngine.copyCurrentSolution()">
+            Copy Action Plan
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="ProblemEngine.exportCurrentTxt()">
+            Export as .TXT
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  toggleStep(idx) {
+    if (!this.currentAnalysis) return;
+    this.currentAnalysis.steps[idx].done = !this.currentAnalysis.steps[idx].done;
+    this.renderOutput();
+  },
+
+  launchTool(toolId) {
+    App.navigate('tools');
+    ToolsManager.switchTool(toolId);
+  },
+
+  saveCurrentToHistory() {
+    if (!this.currentAnalysis) return;
+    const exists = State.history.some(h => h.id === this.currentAnalysis.id);
+    if (exists) {
+      App.toast('This solution is already saved in your history.', 'info');
+      return;
+    }
+    const copy = JSON.parse(JSON.stringify(this.currentAnalysis));
+    copy.recommendedTools = copy.recommendedTools.map(t => t.id || t);
+    State.history.unshift(copy);
+    App.logActivity(`Saved solution "${copy.title.substring(0, 35)}..." to History`);
+    App.toast('Solution saved to History!', 'success');
+  },
+
+  formatPlainText(res) {
+    return [
+      `============================================================`,
+      `SOLVEX - STRUCTURED PROBLEM SOLUTION REPORT`,
+      `============================================================`,
+      `Date: ${new Date(res.createdAt).toLocaleString()}`,
+      `Problem: ${res.fullProblem || res.title}`,
+      `Category: ${res.category}`,
+      `Priority: ${res.priority} | Difficulty: ${res.difficulty} | Confidence: ${res.confidence}%`,
+      ``,
+      `ROOT-CAUSE DIAGNOSTIC:`,
+      `${res.rootCause}`,
+      ``,
+      `ACTIONABLE EXECUTION STEPS:`,
+      ...res.steps.map((s, i) => `${i + 1}. [${s.done ? 'X' : ' '}] ${s.text}`),
+      `============================================================`
+    ].join('\n');
+  },
+
+  copyCurrentSolution() {
+    if (!this.currentAnalysis) return;
+    App.copyText(this.formatPlainText(this.currentAnalysis), 'Solution copied to clipboard!');
+  },
+
+  exportCurrentTxt() {
+    if (!this.currentAnalysis) return;
+    App.downloadTxtFile(`SolveX-Solution-${Date.now()}.txt`, this.formatPlainText(this.currentAnalysis));
+  }
+};
+
+/**
+ * ============================================================================
+ * MODULE 2: 10 DAILY LIFE TOOLS MANAGER
+ * ============================================================================
+ */
+const ToolsManager = {
+  pomoInterval: null,
+  pomoSecondsLeft: 25 * 60,
+  pomoRunning: false,
+
+  unitDefinitions: {
+    length: {
+      units: { Meters: 1, Kilometers: 1000, Centimeters: 0.01, Miles: 1609.344, Feet: 0.3048, Inches: 0.0254 },
+      defaultFrom: 'Kilometers',
+      defaultTo: 'Miles'
+    },
+    weight: {
+      units: { Kilograms: 1, Grams: 0.001, Pounds: 0.45359237, Ounces: 0.0283495 },
+      defaultFrom: 'Kilograms',
+      defaultTo: 'Pounds'
+    },
+    data: {
+      units: { Megabytes: 1, Gigabytes: 1024, Terabytes: 1048576, Kilobytes: 0.0009765625 },
+      defaultFrom: 'Gigabytes',
+      defaultTo: 'Megabytes'
+    },
+    time: {
+      units: { Hours: 3600, Minutes: 60, Seconds: 1, Days: 86400, Weeks: 604800 },
+      defaultFrom: 'Days',
+      defaultTo: 'Hours'
+    },
+    temperature: {
+      units: { Celsius: 'C', Fahrenheit: 'F', Kelvin: 'K' },
+      defaultFrom: 'Celsius',
+      defaultTo: 'Fahrenheit'
+    }
+  },
+
+  init() {
+    this.calcBudget();
+    this.renderExpenses();
+    this.renderStudyPlan();
+    this.renderMatrix();
+    this.calcProductivity();
+    this.calcPercentages();
+    document.getElementById('ageTargetInput').value = new Date().toISOString().slice(0, 10);
+    this.calcAge();
+    this.populateConverterUnits();
+    document.getElementById('pomoCountDisplay').textContent = State.stats.pomodoroCompleted || 0;
+  },
+
+  switchTool(toolId) {
+    document.querySelectorAll('.tool-tab-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.tool === toolId);
+    });
+    document.querySelectorAll('.tool-panel').forEach(p => {
+      p.classList.toggle('active', p.id === `tool-${toolId}`);
+    });
+    if (toolId === 'goalquick') GoalsManager.renderQuickGoals();
+  },
+
+  /* --- TOOL 1: SMART BUDGET PLANNER --- */
+  setBudgetPreset(needs, wants) {
+    document.getElementById('budgetNeedsPct').value = needs;
+    document.getElementById('budgetWantsPct').value = wants;
+    this.calcBudget();
+  },
+
+  calcBudget() {
+    const income = Math.max(0, parseFloat(document.getElementById('budgetIncome').value) || 0);
+    let needsPct = parseInt(document.getElementById('budgetNeedsPct').value, 10);
+    let wantsPct = parseInt(document.getElementById('budgetWantsPct').value, 10);
+
+    if (needsPct + wantsPct > 95) {
+      wantsPct = 95 - needsPct;
+      document.getElementById('budgetWantsPct').value = wantsPct;
+    }
+    const savingsPct = 100 - needsPct - wantsPct;
+
+    document.getElementById('lblNeedsPct').textContent = needsPct;
+    document.getElementById('lblWantsPct').textContent = wantsPct;
+
+    const needsAmt = (income * needsPct) / 100;
+    const wantsAmt = (income * wantsPct) / 100;
+    const savingsAmt = (income * savingsPct) / 100;
+
+    document.getElementById('budgetResultBox').innerHTML = `
+      <div style="background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:18px;">
+        <div style="font-size:0.82rem; font-weight:600; color:var(--text-secondary);">Visual Allocation Breakdown</div>
+        <div class="stacked-bar">
+          <div style="width:${needsPct}%; background:var(--accent-blue);" title="Needs ${needsPct}%"></div>
+          <div style="width:${wantsPct}%; background:var(--accent-violet);" title="Wants ${wantsPct}%"></div>
+          <div style="width:${savingsPct}%; background:var(--accent-emerald);" title="Savings ${savingsPct}%"></div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+            <span><strong style="color:var(--accent-blue);">● Essential Needs (${needsPct}%)</strong></span>
+            <strong style="font-family:'JetBrains Mono',monospace;">$${needsAmt.toFixed(2)}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+            <span><strong style="color:var(--accent-violet);">● Lifestyle Wants (${wantsPct}%)</strong></span>
+            <strong style="font-family:'JetBrains Mono',monospace;">$${wantsAmt.toFixed(2)}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
+            <span><strong style="color:var(--accent-emerald);">● Savings & Debt Paydown (${savingsPct}%)</strong></span>
+            <strong style="font-family:'JetBrains Mono',monospace;">$${savingsAmt.toFixed(2)}</strong>
+          </div>
+        </div>
+        <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border-color); font-size:0.8rem; color:var(--text-secondary);">
+          Projected Annual Savings Rate: <strong style="color:var(--accent-emerald);">$${(savingsAmt * 12).toLocaleString()} / year</strong>
+        </div>
+      </div>
+    `;
+  },
+
+  /* --- TOOL 2: EXPENSE CALCULATOR --- */
+  addExpense() {
+    const name = document.getElementById('expName').value.trim();
+    const category = document.getElementById('expCategory').value;
+    const amount = parseFloat(document.getElementById('expAmount').value);
+
+    if (!name || isNaN(amount) || amount <= 0) {
+      App.toast('Please enter a valid expense name and positive dollar amount.', 'warning');
+      return;
+    }
+
+    State.expenses.unshift({ id: 'exp-' + Date.now(), name, category, amount });
+    document.getElementById('expName').value = '';
+    document.getElementById('expAmount').value = '';
+    App.saveState();
+    this.renderExpenses();
+    App.toast(`Added $${amount.toFixed(2)} expense.`, 'success');
+  },
+
+  deleteExpense(id) {
+    State.expenses = State.expenses.filter(e => e.id !== id);
+    App.saveState();
+    this.renderExpenses();
+  },
+
+  clearExpenses() {
+    State.expenses = [];
+    App.saveState();
+    this.renderExpenses();
+    App.toast('Cleared all expenses.', 'info');
+  },
+
+  renderExpenses() {
+    const container = document.getElementById('expenseSummaryArea');
+    const total = State.expenses.reduce((acc, e) => acc + e.amount, 0);
+    const byCat = {};
+    State.expenses.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + e.amount; });
+
+    let topCat = 'None';
+    let topAmt = 0;
+    Object.entries(byCat).forEach(([c, a]) => {
+      if (a > topAmt) { topAmt = a; topCat = c; }
+    });
+
+    container.innerHTML = `
+      <div class="grid-2" style="margin-bottom:14px;">
+        <div style="padding:14px; background:var(--bg-primary); border-radius:var(--radius-md); border:1px solid var(--border-color);">
+          <div style="font-size:0.78rem; color:var(--text-secondary);">Total Monthly Expenses</div>
+          <div style="font-size:1.5rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--accent-rose);">$${total.toFixed(2)}</div>
+        </div>
+        <div style="padding:14px; background:var(--bg-primary); border-radius:var(--radius-md); border:1px solid var(--border-color);">
+          <div style="font-size:0.78rem; color:var(--text-secondary);">Highest Cost Category</div>
+          <div style="font-size:1.05rem; font-weight:700; color:var(--accent-amber);">${App.escapeHTML(topCat)} ($${topAmt.toFixed(2)})</div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${State.expenses.length === 0 ? `<div class="empty-state" style="padding:16px;">No expenses logged. Add an item above.</div>` : State.expenses.map(e => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius-sm);">
+            <div>
+              <strong>${App.escapeHTML(e.name)}</strong>
+              <span class="badge badge-blue" style="margin-left:8px;">${App.escapeHTML(e.category)}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <strong style="font-family:'JetBrains Mono',monospace;">$${e.amount.toFixed(2)}</strong>
+              <button class="btn btn-danger btn-sm" onclick="ToolsManager.deleteExpense('${e.id}')">✕</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  },
+
+  /* --- TOOL 3: STUDY PLANNER --- */
+  addStudySubject() {
+    const name = document.getElementById('studySubjectName').value.trim();
+    const difficulty = parseInt(document.getElementById('studyDifficulty').value, 10);
+    if (!name) {
+      App.toast('Enter a subject or exam topic name.', 'warning');
+      return;
+    }
+    State.studySubjects.push({ id: 'st-' + Date.now(), name, difficulty });
+    document.getElementById('studySubjectName').value = '';
+    App.saveState();
+    this.renderStudyPlan();
+  },
+
+  removeStudySubject(id) {
+    State.studySubjects = State.studySubjects.filter(s => s.id !== id);
+    App.saveState();
+    this.renderStudyPlan();
+  },
+
+  renderStudyPlan() {
+    const hours = Math.max(1, parseFloat(document.getElementById('studyDailyHours').value) || 4);
+    const totalWeight = State.studySubjects.reduce((acc, s) => acc + s.difficulty, 0);
+    const out = document.getElementById('studyPlannerOutput');
+
+    if (State.studySubjects.length === 0) {
+      out.innerHTML = `<div class="empty-state" style="padding:18px;">Add at least one exam topic to calculate a weighted study schedule.</div>`;
+      return;
+    }
+
+    out.innerHTML = State.studySubjects.map(s => {
+      const share = s.difficulty / totalWeight;
+      const allocatedHours = (hours * share).toFixed(1);
+      const mins = Math.round(hours * share * 60);
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:8px;">
+          <div>
+            <strong>${App.escapeHTML(s.name)}</strong>
+            <span class="badge badge-violet" style="margin-left:8px;">Weight: ${s.difficulty}/5</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px;">
+            <span style="font-family:'JetBrains Mono',monospace; color:var(--accent-blue); font-weight:700;">
+              ${allocatedHours} hrs/day (${mins} min)
+            </span>
+            <button class="btn btn-danger btn-sm" onclick="ToolsManager.removeStudySubject('${s.id}')">✕</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  /* --- TOOL 4: TIME MANAGEMENT (EISENHOWER + POMODORO) --- */
+  addMatrixTask() {
+    const val = document.getElementById('matrixTaskInput').value.trim();
+    const quad = document.getElementById('matrixQuadSelect').value;
+    if (!val) return;
+    State.matrixTasks[quad].push(val);
+    document.getElementById('matrixTaskInput').value = '';
+    App.saveState();
+    this.renderMatrix();
+  },
+
+  removeMatrixTask(quad, idx) {
+    State.matrixTasks[quad].splice(idx, 1);
+    App.saveState();
+    this.renderMatrix();
+  },
+
+  renderMatrix() {
+    const meta = [
+      { key: 'q1', title: 'Q1: Do First (Urgent & Important)', badge: 'badge-rose' },
+      { key: 'q2', title: 'Q2: Schedule (Important, Not Urgent)', badge: 'badge-emerald' },
+      { key: 'q3', title: 'Q3: Delegate (Urgent, Not Important)', badge: 'badge-amber' },
+      { key: 'q4', title: 'Q4: Eliminate (Low Value)', badge: 'badge-blue' }
+    ];
+    document.getElementById('eisenhowerContainer').innerHTML = meta.map(q => `
+      <div class="quadrant-box">
+        <div class="quadrant-title">
+          <span class="badge ${q.badge}">${q.title}</span>
+          <span style="font-size:0.75rem; color:var(--text-muted);">${State.matrixTasks[q.key].length}</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          ${State.matrixTasks[q.key].map((t, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; padding:6px 9px; background:var(--bg-secondary); border-radius:6px; border:1px solid var(--border-color);">
+              <span>${App.escapeHTML(t)}</span>
+              <button style="color:var(--text-muted); font-size:0.75rem;" onclick="ToolsManager.removeMatrixTask('${q.key}', ${i})">✕</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  },
+
+  togglePomodoro() {
+    const btn = document.getElementById('pomoStartBtn');
+    if (this.pomoRunning) {
+      clearInterval(this.pomoInterval);
+      this.pomoRunning = false;
+      btn.textContent = 'Resume';
+    } else {
+      this.pomoRunning = true;
+      btn.textContent = 'Pause';
+      this.pomoInterval = setInterval(() => {
+        if (this.pomoSecondsLeft > 0) {
+          this.pomoSecondsLeft--;
+          this.updatePomoDisplay();
+        } else {
+          clearInterval(this.pomoInterval);
+          this.pomoRunning = false;
+          btn.textContent = 'Start';
+          State.stats.pomodoroCompleted = (State.stats.pomodoroCompleted || 0) + 1;
+          document.getElementById('pomoCountDisplay').textContent = State.stats.pomodoroCompleted;
+          App.logActivity('Completed a 25-minute Pomodoro focus sprint');
+          App.toast('Focus sprint complete! Great deep work.', 'success');
+        }
+      }, 1000);
+    }
+  },
+
+  resetPomodoro(minutes) {
+    clearInterval(this.pomoInterval);
+    this.pomoRunning = false;
+    this.pomoSecondsLeft = minutes * 60;
+    document.getElementById('pomoStartBtn').textContent = 'Start';
+    document.getElementById('pomoModeLabel').textContent = minutes === 25 ? '25:00 Deep Focus Session' : '05:00 Recovery Break';
+    this.updatePomoDisplay();
+  },
+
+  updatePomoDisplay() {
+    const m = String(Math.floor(this.pomoSecondsLeft / 60)).padStart(2, '0');
+    const s = String(this.pomoSecondsLeft % 60).padStart(2, '0');
+    document.getElementById('pomoDisplay').textContent = `${m}:${s}`;
+  },
+
+  /* --- TOOL 6: QUICK DECISION MAKER --- */
+  runQuickDecision() {
+    const lines = document.getElementById('quickDecOptions').value
+      .split('\n')
+      .map(s => s.trim())
+      .filter(Boolean);
+    if (lines.length < 2) {
+      App.toast('Please enter at least 2 options (one per line).', 'warning');
+      return;
+    }
+    const chosen = lines[Math.floor(Math.random() * lines.length)];
+    document.getElementById('quickDecisionResult').innerHTML = `
+      <div style="text-align:center;">
+        <span class="badge badge-emerald" style="margin-bottom:8px;">Rapid Tie-Breaker Selection</span>
+        <h3 style="font-size:1.25rem; font-weight:800; color:var(--text-primary); margin-bottom:8px;">${App.escapeHTML(chosen)}</h3>
+        <p style="font-size:0.82rem; color:var(--text-secondary);">
+          <strong>Psychological Gut-Check:</strong> Notice your immediate emotional reaction to seeing this result. Are you relieved or disappointed? That reaction reveals your true preference.
+        </p>
+      </div>
+    `;
+  },
+
+  /* --- TOOL 7: PRODUCTIVITY CALCULATOR --- */
+  calcProductivity() {
+    const total = Math.max(0.5, parseFloat(document.getElementById('prodTotalHours').value) || 8);
+    const deep = Math.min(total, Math.max(0, parseFloat(document.getElementById('prodDeepHours').value) || 0));
+    const distractions = Math.max(0, parseInt(document.getElementById('prodDistractions').value, 10) || 0);
+    const tasks = Math.max(0, parseInt(document.getElementById('prodTasksDone').value, 10) || 0);
+
+    // Context switch penalty: ~12 mins (0.2 hrs) lost per interruption
+    const penaltyHours = Math.min(deep, distractions * 0.18);
+    const effectiveDeep = Math.max(0, deep - penaltyHours);
+    const ratio = (effectiveDeep / total) * 100;
+    const score = Math.min(100, Math.round(ratio * 1.15 + Math.min(tasks * 4, 24)));
+
+    let verdict = 'High-Leverage Deep Work Day';
+    if (score < 45) verdict = 'High Fragmentation / Context-Switching Drain';
+    else if (score < 75) verdict = 'Balanced Execution (Room to reduce interruptions)';
+
+    document.getElementById('prodCalcOutput').innerHTML = `
+      <div style="padding:18px; background:var(--bg-primary); border-radius:var(--radius-md); border:1px solid var(--border-color);">
+        <div style="font-size:0.8rem; color:var(--text-secondary);">Computed Efficiency Score</div>
+        <div style="font-size:2.3rem; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--accent-blue); margin:4px 0;">${score}%</div>
+        <span class="badge badge-violet">${verdict}</span>
+        <div style="margin-top:14px; font-size:0.84rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:6px;">
+          <div>• Effective Deep Focus (after switch penalty): <strong>${effectiveDeep.toFixed(1)} hrs</strong></div>
+          <div>• Estimated Cognitive Switch Loss: <strong>${(penaltyHours * 60).toFixed(0)} mins</strong></div>
+          <div>• Recommendation: Batch Slack/Email checks into 2 fixed windows per day.</div>
+        </div>
+      </div>
+    `;
+  },
+
+  /* --- TOOL 8: PERCENTAGE CALCULATOR --- */
+  calcPercentages() {
+    const x1 = parseFloat(document.getElementById('pct1X').value) || 0;
+    const y1 = parseFloat(document.getElementById('pct1Y').value) || 0;
+    document.getElementById('pct1Res').textContent = ((x1 / 100) * y1).toFixed(2);
+
+    const x2 = parseFloat(document.getElementById('pct2X').value) || 0;
+    const y2 = parseFloat(document.getElementById('pct2Y').value) || 1;
+    document.getElementById('pct2Res').textContent = ((x2 / y2) * 100).toFixed(2) + '%';
+
+    const x3 = parseFloat(document.getElementById('pct3X').value) || 1;
+    const y3 = parseFloat(document.getElementById('pct3Y').value) || 0;
+    const diff = ((y3 - x3) / Math.abs(x3)) * 100;
+    document.getElementById('pct3Res').textContent = (diff >= 0 ? '+' : '') + diff.toFixed(2) + '%';
+  },
+
+  /* --- TOOL 9: AGE CALCULATOR --- */
+  calcAge() {
+    const dobStr = document.getElementById('ageDobInput').value;
+    const targetStr = document.getElementById('ageTargetInput').value;
+    if (!dobStr || !targetStr) return;
+
+    const dob = new Date(dobStr);
+    const target = new Date(targetStr);
+    if (dob > target) {
+      document.getElementById('ageResultOutput').innerHTML = `<div class="empty-state">Birth date must be earlier than target date.</div>`;
+      return;
+    }
+
+    let years = target.getFullYear() - dob.getFullYear();
+    let months = target.getMonth() - dob.getMonth();
+    let days = target.getDate() - dob.getDate();
+
+    if (days < 0) {
+      months--;
+      const prevMonth = new Date(target.getFullYear(), target.getMonth(), 0);
+      days += prevMonth.getDate();
+    }
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    const diffMs = target - dob;
+    const totalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const totalWeeks = Math.floor(totalDays / 7);
+    const totalHours = totalDays * 24;
+
+    const nextBday = new Date(target.getFullYear(), dob.getMonth(), dob.getDate());
+    if (nextBday < target) nextBday.setFullYear(target.getFullYear() + 1);
+    const daysToNextBday = Math.ceil((nextBday - target) / (1000 * 60 * 60 * 24));
+
+    document.getElementById('ageResultOutput').innerHTML = `
+      <div style="padding:18px; background:var(--bg-primary); border-radius:var(--radius-md); border:1px solid var(--border-color);">
+        <div style="font-size:0.78rem; color:var(--text-secondary);">Exact Chronological Age</div>
+        <div style="font-size:1.55rem; font-weight:800; color:var(--accent-blue); margin:6px 0;">
+          ${years} Years, ${months} Months, ${days} Days
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; font-size:0.83rem;">
+          <div>Total Weeks: <strong>${totalWeeks.toLocaleString()}</strong></div>
+          <div>Total Days: <strong>${totalDays.toLocaleString()}</strong></div>
+          <div>Total Hours: <strong>${totalHours.toLocaleString()}</strong></div>
+          <div>Next Birthday In: <strong style="color:var(--accent-emerald);">${daysToNextBday} days</strong></div>
+        </div>
+      </div>
+    `;
+  },
+
+  /* --- TOOL 10: UNIT CONVERTER --- */
+  populateConverterUnits() {
+    const cat = document.getElementById('convCategory').value;
+    const def = this.unitDefinitions[cat];
+    const fromSel = document.getElementById('convFromUnit');
+    const toSel = document.getElementById('convToUnit');
+    const unitNames = Object.keys(def.units);
+
+    fromSel.innerHTML = unitNames.map(u => `<option value="${u}">${u}</option>`).join('');
+    toSel.innerHTML = unitNames.map(u => `<option value="${u}">${u}</option>`).join('');
+
+    fromSel.value = def.defaultFrom;
+    toSel.value = def.defaultTo;
+    this.convertUnits('from');
+  },
+
+  convertUnits(direction) {
+    const cat = document.getElementById('convCategory').value;
+    const fromUnit = document.getElementById('convFromUnit').value;
+    const toUnit = document.getElementById('convToUnit').value;
+    const fromInput = document.getElementById('convFromVal');
+    const toInput = document.getElementById('convToVal');
+
+    const val = parseFloat(direction === 'from' ? fromInput.value : toInput.value);
+    if (isNaN(val)) return;
+
+    let result = 0;
+    const sourceUnit = direction === 'from' ? fromUnit : toUnit;
+    const destUnit = direction === 'from' ? toUnit : fromUnit;
+
+    if (cat === 'temperature') {
+      let celsius = val;
+      if (sourceUnit === 'Fahrenheit') celsius = (val - 32) * (5 / 9);
+      if (sourceUnit === 'Kelvin') celsius = val - 273.15;
+
+      if (destUnit === 'Celsius') result = celsius;
+      if (destUnit === 'Fahrenheit') result = (celsius * 9) / 5 + 32;
+      if (destUnit === 'Kelvin') result = celsius + 273.15;
+    } else {
+      const map = this.unitDefinitions[cat].units;
+      const baseValue = val * map[sourceUnit];
+      result = baseValue / map[destUnit];
+    }
+
+    const formatted = Number(result.toFixed(5));
+    if (direction === 'from') toInput.value = formatted;
+    else fromInput.value = formatted;
+
+    document.getElementById('convFormulaNote').textContent =
+      `${fromInput.value} ${fromUnit} = ${toInput.value} ${toUnit}`;
+  }
+};
+
+/**
+ * ============================================================================
+ * MODULE 3: SMART DECISION MAKER (WEIGHTED MULTI-OPTION MATRIX)
+ * ============================================================================
+ */
+const DecisionEngine = {
+  options: [
+    {
+      id: 'opt-1',
+      name: 'Option A: Accept Remote Product Lead Offer',
+      pros: [
+        { text: '25% higher base compensation & equity', weight: 9 },
+        { text: 'Zero daily commute (saves 8 hrs/week)', weight: 8 },
+        { text: 'Direct ownership of core product roadmap', weight: 8 }
+      ],
+      cons: [
+        { text: 'Steeper onboarding curve in first 90 days', weight: 5 },
+        { text: 'Smaller brand recognition than current enterprise', weight: 4 }
+      ]
+    },
+    {
+      id: 'opt-2',
+      name: 'Option B: Stay at Current Enterprise Role',
+      pros: [
+        { text: 'High psychological comfort & predictable routine', weight: 7 },
+        { text: 'Established internal network', weight: 6 }
+      ],
+      cons: [
+        { text: 'Compensation growth capped at 4% annually', weight: 8 },
+        { text: 'Mandatory 3-day commute in heavy traffic', weight: 6 }
+      ]
+    }
+  ],
+
+  init() {
+    document.getElementById('decisionTitleInput').value = 'Accept Remote Product Lead Offer vs. Stay at Current Role';
+    this.renderBuilder();
+    this.evaluateDecision(true);
+  },
+
+  loadSampleDecision() {
+    this.init();
+    App.toast('Loaded sample weighted career dilemma.', 'info');
+  },
+
+  addOption() {
+    this.options.push({
+      id: 'opt-' + Date.now(),
+      name: `Option ${String.fromCharCode(65 + this.options.length)}`,
+      pros: [{ text: 'Primary advantage', weight: 7 }],
+      cons: [{ text: 'Primary drawback or cost', weight: 5 }]
+    });
+    this.renderBuilder();
+  },
+
+  removeOption(idx) {
+    if (this.options.length <= 2) {
+      App.toast('A decision comparison requires at least 2 options.', 'warning');
+      return;
+    }
+    this.options.splice(idx, 1);
+    this.renderBuilder();
+  },
+
+  addProCon(optIdx, type) {
+    this.options[optIdx][type].push({ text: '', weight: 5 });
+    this.renderBuilder();
+  },
+
+  removeProCon(optIdx, type, itemIdx) {
+    this.options[optIdx][type].splice(itemIdx, 1);
+    this.renderBuilder();
+  },
+
+  syncOptionName(optIdx, val) {
+    this.options[optIdx].name = val;
+  },
+
+  syncProConText(optIdx, type, itemIdx, val) {
+    this.options[optIdx][type][itemIdx].text = val;
+  },
+
+  syncProConWeight(optIdx, type, itemIdx, val) {
+    this.options[optIdx][type][itemIdx].weight = Math.min(10, Math.max(1, parseInt(val, 10) || 1));
+  },
+
+  renderBuilder() {
+    const container = document.getElementById('decisionOptionsBuilder');
+    container.innerHTML = this.options.map((opt, optIdx) => `
+      <div class="decision-option-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
+          <input type="text" class="form-input" value="${App.escapeHTML(opt.name)}" oninput="DecisionEngine.syncOptionName(${optIdx}, this.value)" style="font-weight:700;" />
+          <button class="btn btn-danger btn-sm" onclick="DecisionEngine.removeOption(${optIdx})">Remove</button>
+        </div>
+
+        <div class="grid-2">
+          <!-- Pros -->
+          <div>
+            <div style="font-size:0.78rem; font-weight:700; color:var(--accent-emerald); margin-bottom:6px;">
+              + PROS (Impact Weight 1-10)
+            </div>
+            ${opt.pros.map((p, pIdx) => `
+              <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <input type="text" class="form-input" placeholder="Advantage..." value="${App.escapeHTML(p.text)}" oninput="DecisionEngine.syncProConText(${optIdx}, 'pros', ${pIdx}, this.value)" />
+                <input type="number" class="form-input" min="1" max="10" value="${p.weight}" style="width:68px;" oninput="DecisionEngine.syncProConWeight(${optIdx}, 'pros', ${pIdx}, this.value)" />
+                <button class="btn btn-secondary btn-sm" onclick="DecisionEngine.removeProCon(${optIdx}, 'pros', ${pIdx})">✕</button>
+              </div>
+            `).join('')}
+            <button class="btn btn-secondary btn-sm" onclick="DecisionEngine.addProCon(${optIdx}, 'pros')">+ Add Pro</button>
+          </div>
+
+          <!-- Cons -->
+          <div>
+            <div style="font-size:0.78rem; font-weight:700; color:var(--accent-rose); margin-bottom:6px;">
+              - CONS (Risk/Cost Weight 1-10)
+            </div>
+            ${opt.cons.map((c, cIdx) => `
+              <div style="display:flex; gap:6px; margin-bottom:6px;">
+                <input type="text" class="form-input" placeholder="Disadvantage..." value="${App.escapeHTML(c.text)}" oninput="DecisionEngine.syncProConText(${optIdx}, 'cons', ${cIdx}, this.value)" />
+                <input type="number" class="form-input" min="1" max="10" value="${c.weight}" style="width:68px;" oninput="DecisionEngine.syncProConWeight(${optIdx}, 'cons', ${cIdx}, this.value)" />
+                <button class="btn btn-secondary btn-sm" onclick="DecisionEngine.removeProCon(${optIdx}, 'cons', ${cIdx})">✕</button>
+              </div>
+            `).join('')}
+            <button class="btn btn-secondary btn-sm" onclick="DecisionEngine.addProCon(${optIdx}, 'cons')">+ Add Con</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  evaluateDecision(silent = false) {
+    const title = document.getElementById('decisionTitleInput').value.trim() || 'Untitled Decision Analysis';
+
+    const scored = this.options.map(opt => {
+      const prosScore = opt.pros.reduce((acc, p) => acc + (p.text.trim() ? Number(p.weight) : 0), 0);
+      const consScore = opt.cons.reduce((acc, c) => acc + (c.text.trim() ? Number(c.weight) : 0), 0);
+      const netScore = prosScore - consScore;
+      const ratio = consScore > 0 ? (prosScore / consScore).toFixed(2) : prosScore.toFixed(2);
+      return { ...opt, prosScore, consScore, netScore, ratio };
+    }).sort((a, b) => b.netScore - a.netScore);
+
+    const winner = scored[0];
+    const runnerUp = scored[1];
+    const margin = winner.netScore - (runnerUp ? runnerUp.netScore : 0);
+
+    const out = document.getElementById('decisionEvaluationOutput');
+    out.innerHTML = `
+      <div class="decision-winner-banner">
+        <span class="badge badge-emerald" style="margin-bottom:8px;">Optimal Mathematical Recommendation</span>
+        <h3 style="font-size:1.2rem; font-weight:800; margin-bottom:6px;">${App.escapeHTML(winner.name)}</h3>
+        <p style="font-size:0.86rem; color:var(--text-secondary);">
+          Ranked #1 with a Net Weighted Utility of <strong style="color:var(--accent-emerald);">${winner.netScore >= 0 ? '+' : ''}${winner.netScore}</strong>
+          (Benefit-to-Risk Ratio: <strong>${winner.ratio}x</strong>), outperforming the next alternative by <strong>${margin} points</strong>.
+        </p>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:18px;">
+        ${scored.map((item, rank) => `
+          <div style="padding:14px; background:var(--bg-primary); border-radius:var(--radius-md); border:1px solid var(--border-color);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <strong>#${rank + 1} ${App.escapeHTML(item.name)}</strong>
+              <span class="badge ${item.netScore >= 0 ? 'badge-blue' : 'badge-rose'}" style="font-family:'JetBrains Mono',monospace;">
+                Net Score: ${item.netScore >= 0 ? '+' : ''}${item.netScore}
+              </span>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-secondary); display:flex; gap:16px;">
+              <span style="color:var(--accent-emerald);">Weighted Pros: +${item.prosScore}</span>
+              <span style="color:var(--accent-rose);">Weighted Cons: -${item.consScore}</span>
+              <span>Ratio: ${item.ratio}x</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <button class="btn btn-primary btn-sm" onclick="DecisionEngine.saveDecisionToHistory()">
+        Save Decision Analysis to History
+      </button>
+    `;
+
+    this.lastEvaluated = { title, winner, scored };
+    if (!silent) {
+      App.logActivity(`Evaluated decision matrix: "${title}"`);
+      App.toast(`Recommended: ${winner.name}`, 'success');
+    }
+  },
+
+  saveDecisionToHistory() {
+    if (!this.lastEvaluated) return;
+    const { title, winner, scored } = this.lastEvaluated;
+    const record = {
+      id: 'dec-' + Date.now(),
+      type: 'decision',
+      title,
+      category: 'Weighted Decision Analysis',
+      difficulty: 'Complex',
+      priority: 'High',
+      confidence: 95,
+      rootCause: `Recommended Winner: ${winner.name} (Net Weighted Score: ${winner.netScore >= 0 ? '+' : ''}${winner.netScore}, Benefit/Risk Ratio: ${winner.ratio}x)`,
+      steps: scored.map((s, i) => ({
+        text: `Rank #${i + 1}: ${s.name} — Pros: +${s.prosScore}, Cons: -${s.consScore}, Net: ${s.netScore}`,
+        done: i === 0
+      })),
+      recommendedTools: ['budget', 'goalquick'],
+      createdAt: new Date().toISOString()
+    };
+    State.history.unshift(record);
+    App.logActivity(`Saved decision "${title}" to Solution History`);
+    App.toast('Decision saved to Solution History!', 'success');
+  }
+};
+
+/**
+ * ============================================================================
+ * MODULE 4: MY GOALS MANAGER
+ * ============================================================================
+ */
+const GoalsManager = {
+  filter: 'all',
+
+  setFilter(f) {
+    this.filter = f;
+    this.render();
+  },
+
+  createGoal() {
+    const title = document.getElementById('newGoalTitle').value.trim();
+    const category = document.getElementById('newGoalCategory').value;
+    const deadline = document.getElementById('newGoalDeadline').value || 'Ongoing';
+
+    if (!title) {
+      App.toast('Please enter a goal title.', 'warning');
+      return;
+    }
+
+    State.goals.unshift({
+      id: 'goal-' + Date.now(),
+      title,
+      category,
+      deadline,
+      progress: 0,
+      completed: false
+    });
+
+    document.getElementById('newGoalTitle').value = '';
+    App.logActivity(`Created new goal "${title}"`);
+    this.render();
+    App.toast('Goal added to tracker!', 'success');
+  },
+
+  addQuickGoal() {
+    const title = document.getElementById('quickGoalTitle').value.trim();
+    const category = document.getElementById('quickGoalCategory').value.trim() || 'General';
+    if (!title) {
+      App.toast('Enter a goal title.', 'warning');
+      return;
+    }
+    State.goals.unshift({
+      id: 'goal-' + Date.now(),
+      title,
+      category,
+      deadline: 'Ongoing',
+      progress: 10,
+      completed: false
+    });
+    document.getElementById('quickGoalTitle').value = '';
+    App.saveState();
+    this.renderQuickGoals();
+    App.renderDashboard();
+    App.toast('Goal created & synced!', 'success');
+  },
+
+  updateProgress(id, delta) {
+    const g = State.goals.find(item => item.id === id);
+    if (!g) return;
+    g.progress = Math.min(100, Math.max(0, Number(g.progress) + delta));
+    g.completed = g.progress === 100;
+    if (g.completed) App.logActivity(`Completed goal "${g.title}"!`);
+    else App.saveState();
+    this.render();
+    this.renderQuickGoals();
+    App.renderDashboard();
+  },
+
+  deleteGoal(id) {
+    State.goals = State.goals.filter(g => g.id !== id);
+    App.saveState();
+    this.render();
+    this.renderQuickGoals();
+    App.renderDashboard();
+    App.toast('Goal removed.', 'info');
+  },
+
+  render() {
+    const container = document.getElementById('goalsGridContainer');
+    let list = State.goals;
+    if (this.filter === 'active') list = list.filter(g => !g.completed);
+    if (this.filter === 'completed') list = list.filter(g => g.completed);
+
+    document.getElementById('goalsSummaryLabel').textContent =
+      `Showing ${list.length} of ${State.goals.length} total goals`;
+
+    if (list.length === 0) {
+      container.innerHTML = `<div class="card empty-state" style="grid-column: 1 / -1;">No goals match the selected filter. Create a goal above to begin tracking.</div>`;
+      return;
+    }
+
+    container.innerHTML = list.map(g => `
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;">
+          <div>
+            <span class="badge ${g.completed ? 'badge-emerald' : 'badge-blue'}">${App.escapeHTML(g.category)}</span>
+            <h3 style="font-size:1.05rem; font-weight:700; margin-top:6px;">${App.escapeHTML(g.title)}</h3>
+          </div>
+          <span style="font-family:'JetBrains Mono',monospace; font-weight:800; font-size:1.1rem; color:${g.completed ? 'var(--accent-emerald)' : 'var(--accent-blue)'};">
+            ${g.progress}%
+          </span>
+        </div>
+
+        <div class="progress-track" style="margin: 12px 0;">
+          <div class="progress-fill" style="width:${g.progress}%;"></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:14px;">
+          <span style="font-size:0.78rem; color:var(--text-muted);">Target: ${App.escapeHTML(g.deadline)}</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="GoalsManager.updateProgress('${g.id}', -10)">-10%</button>
+            <button class="btn btn-secondary btn-sm" onclick="GoalsManager.updateProgress('${g.id}', 15)">+15%</button>
+            <button class="btn btn-primary btn-sm" onclick="GoalsManager.updateProgress('${g.id}', 100)">Complete</button>
+            <button class="btn btn-danger btn-sm" onclick="GoalsManager.deleteGoal('${g.id}')">✕</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  renderQuickGoals() {
+    const el = document.getElementById('quickGoalsList');
+    if (!el) return;
+    if (State.goals.length === 0) {
+      el.innerHTML = `<div class="empty-state" style="padding:16px;">No active goals yet.</div>`;
+      return;
+    }
+    el.innerHTML = State.goals.map(g => `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius-md); margin-bottom:8px;">
+        <div style="flex:1; margin-right:16px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:0.86rem;">
+            <strong>${App.escapeHTML(g.title)}</strong>
+            <span>${g.progress}%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:${g.progress}%;"></div></div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="GoalsManager.updateProgress('${g.id}', 20)">+20%</button>
+      </div>
+    `).join('');
+  }
+};
+
+/**
+ * ============================================================================
+ * MODULE 5: SOLUTION HISTORY ARCHIVE MANAGER
+ * ============================================================================
+ */
+const HistoryManager = {
+  render() {
+    const query = (document.getElementById('historySearchInput')?.value || '').toLowerCase().trim();
+    const typeFilter = document.getElementById('historyTypeFilter')?.value || 'all';
+    const container = document.getElementById('historyListContainer');
+
+    const filtered = State.history.filter(item => {
+      const matchesType = typeFilter === 'all' || item.type === typeFilter;
+      const matchesQuery = !query ||
+        item.title.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query) ||
+        (item.rootCause && item.rootCause.toLowerCase().includes(query));
+      return matchesType && matchesQuery;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="card empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <h3 style="font-size:1rem; font-weight:700; color:var(--text-primary); margin-bottom:6px;">No Matching History Records</h3>
+          <p style="font-size:0.85rem; margin-bottom:14px;">Solve a problem or save a weighted decision to build your searchable knowledge archive.</p>
+          <button class="btn btn-primary btn-sm" onclick="App.navigate('solver')">Solve a Problem Now</button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => `
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:10px;">
+          <div>
+            <span class="badge ${item.type === 'decision' ? 'badge-violet' : 'badge-blue'}">${App.escapeHTML(item.category)}</span>
+            <span class="badge badge-emerald">Priority: ${App.escapeHTML(item.priority)}</span>
+            <h3 style="font-size:1.05rem; font-weight:700; margin-top:8px;">${App.escapeHTML(item.title)}</h3>
+          </div>
+          <span style="font-size:0.76rem; color:var(--text-muted); font-family:'JetBrains Mono',monospace;">
+            ${new Date(item.createdAt).toLocaleDateString()}
+          </span>
+        </div>
+
+        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">
+          <strong>Summary:</strong> ${App.escapeHTML(item.rootCause)}
+        </p>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="HistoryManager.viewRecordModal('${item.id}')">View Action Steps</button>
+          <button class="btn btn-secondary btn-sm" onclick="HistoryManager.copyRecord('${item.id}')">Copy</button>
+          <button class="btn btn-secondary btn-sm" onclick="HistoryManager.exportRecord('${item.id}')">Export .TXT</button>
+          <button class="btn btn-danger btn-sm" onclick="HistoryManager.deleteRecord('${item.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  viewRecordModal(id) {
+    const rec = State.history.find(h => h.id === id);
+    if (!rec) return;
+    const html = `
+      <div style="margin-bottom:12px;">
+        <span class="badge badge-blue">${App.escapeHTML(rec.category)}</span>
+        <span class="badge badge-amber">Priority: ${App.escapeHTML(rec.priority)}</span>
+      </div>
+      <p style="margin-bottom:12px; color:var(--text-primary);"><strong>Diagnostic:</strong> ${App.escapeHTML(rec.rootCause)}</p>
+      <div style="font-weight:700; margin-bottom:8px; color:var(--text-primary);">Action Steps:</div>
+      <ol style="padding-left:20px; display:flex; flex-direction:column; gap:6px;">
+        ${rec.steps.map(s => `<li>${App.escapeHTML(s.text)}</li>`).join('')}
+      </ol>
+    `;
+    App.openModal(rec.title, html, [
+      { label: 'Export .TXT', class: 'btn-secondary', onClick: () => HistoryManager.exportRecord(id) },
+      { label: 'Close', class: 'btn-primary', onClick: () => App.closeModal() }
+    ]);
+  },
+
+  copyRecord(id) {
+    const rec = State.history.find(h => h.id === id);
+    if (!rec) return;
+    App.copyText(ProblemEngine.formatPlainText(rec));
+  },
+
+  exportRecord(id) {
+    const rec = State.history.find(h => h.id === id);
+    if (!rec) return;
+    App.downloadTxtFile(`SolveX-Record-${rec.id}.txt`, ProblemEngine.formatPlainText(rec));
+  },
+
+  deleteRecord(id) {
+    State.history = State.history.filter(h => h.id !== id);
+    App.saveState();
+    this.render();
+    App.renderDashboard();
+    App.toast('Record deleted from history.', 'info');
+  },
+
+  confirmClearAll() {
+    if (State.history.length === 0) {
+      App.toast('History is already empty.', 'info');
+      return;
+    }
+    App.openModal(
+      'Clear Entire Solution History?',
+      `Are you sure you want to delete all ${State.history.length} saved solutions and decision analyses?`,
+      [
+        { label: 'Cancel', class: 'btn-secondary', onClick: () => App.closeModal() },
+        {
+          label: 'Delete All Records',
+          class: 'btn-danger',
+          onClick: () => {
+            State.history = [];
+            App.saveState();
+            HistoryManager.render();
+            App.renderDashboard();
+            App.closeModal();
+            App.toast('All solution history cleared.', 'warning');
+          }
+        }
+      ]
+    );
+  }
+};
+
+// Initialize SolveX on DOM Ready
+window.addEventListener('DOMContentLoaded', () => {
+  App.init();
+});
+</script>
+</body>
+</html>
